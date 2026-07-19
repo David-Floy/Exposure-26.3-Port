@@ -17,6 +17,15 @@ public class ExposureServer {
         frameHistory = ExposureFrameHistory.loadOrCreate(server);
     }
 
+    public static boolean isInitialized() {
+        return vault != null && frameHistory != null;
+    }
+
+    public static void clear() {
+        vault = null;
+        frameHistory = null;
+    }
+
     // --
 
     public static ExposureRepository exposureRepository() {

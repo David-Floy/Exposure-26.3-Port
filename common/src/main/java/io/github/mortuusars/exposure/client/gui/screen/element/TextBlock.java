@@ -2,8 +2,9 @@ package io.github.mortuusars.exposure.client.gui.screen.element;
 
 import io.github.mortuusars.exposure.client.gui.screen.element.textbox.HorizontalAlignment;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.AbstractWidget;
+import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.gui.narration.NarratedElementType;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.gui.screens.inventory.tooltip.DefaultTooltipPositioner;
@@ -78,9 +79,9 @@ public class TextBlock extends AbstractWidget {
     }
 
     @Override
-    public boolean mouseClicked(double mouseX, double mouseY, int button) {
-        Style style = getClickedComponentStyleAt(mouseX, mouseY);
-        return button == 0 && style != null && componentClickedHandler.apply(style);
+    public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
+        Style style = getClickedComponentStyleAt(event.x(), event.y());
+        return event.button() == 0 && style != null && componentClickedHandler.apply(style);
     }
 
     @Override
@@ -94,22 +95,18 @@ public class TextBlock extends AbstractWidget {
     }
 
     @Override
-    protected void renderWidget(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
+    protected void extractWidgetRenderState(GuiGraphicsExtractor guiGraphics, int mouseX, int mouseY, float partialTick) {
+        var textRenderer = guiGraphics.textRendererForWidget(this,
+                GuiGraphicsExtractor.HoveredTextEffects.TOOLTIP_AND_CURSOR);
         for (int i = 0; i < renderedLines.size(); i++) {
             FormattedCharSequence line = renderedLines.get(i);
 
             int x = getX() + alignment.align(getWidth(), font.width(line));
-            guiGraphics.drawString(font, line, x, getY() + font.lineHeight * i, fontColor, drawShadow);
-        }
-
-        if (isHovered()) {
-            Style style = getClickedComponentStyleAt(mouseX, mouseY);
-            if (style != null)
-                guiGraphics.renderComponentHoverEffect(this.font, style, mouseX, mouseY);
+            textRenderer.accept(x, getY() + font.lineHeight * i, line);
         }
 
         if (!tooltipLines.isEmpty() && isMouseOver(mouseX, mouseY))
-            guiGraphics.renderTooltip(font, tooltipLines, DefaultTooltipPositioner.INSTANCE, mouseX, mouseY);
+            guiGraphics.setTooltipForNextFrame(font, tooltipLines, DefaultTooltipPositioner.INSTANCE, mouseX, mouseY, false);
     }
 
     public @Nullable Style getClickedComponentStyleAt(double mouseX, double mouseY) {
@@ -134,6 +131,17 @@ public class TextBlock extends AbstractWidget {
             return null;
 
 
-        return font.getSplitter().componentStyleAtWidth(line, x - lineStart);
+        int[] consumedWidth = {0};
+        Style[] result = {null};
+        line.accept((index, characterStyle, codePoint) -> {
+            int glyphWidth = font.width(FormattedCharSequence.codepoint(codePoint, characterStyle));
+            if (x - lineStart < consumedWidth[0] + glyphWidth) {
+                result[0] = characterStyle;
+                return false;
+            }
+            consumedWidth[0] += glyphWidth;
+            return true;
+        });
+        return result[0];
     }
 }

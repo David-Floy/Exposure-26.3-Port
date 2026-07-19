@@ -11,16 +11,16 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.function.Predicate;
 
-public class PacketsImpl {
-    public static void sendToServer(Packet packet) {
-        FabricC2SPackets.sendToServer(packet);
+public class PacketsImpl implements io.github.mortuusars.exposure.network.Packets.Service {
+    public void sendToServer(Packet packet) {
+        FabricClientPacketSender.send(packet);
     }
 
-    public static void sendToClient(Packet packet, ServerPlayer player) {
+    public void sendToClient(Packet packet, ServerPlayer player) {
         ServerPlayNetworking.send(player, packet);
     }
 
-    public static void sendToClients(Packet packet, Predicate<ServerPlayer> filter) {
+    public void sendToClients(Packet packet, Predicate<ServerPlayer> filter) {
         if (ExposureFabric.server == null) {
             Exposure.LOGGER.error("Cannot send a packet to players. Server is not available.");
             return;
@@ -33,7 +33,7 @@ public class PacketsImpl {
         }
     }
 
-    public static void sendToAllClients(Packet packet) {
+    public void sendToAllClients(Packet packet) {
         if (ExposureFabric.server == null) {
             Exposure.LOGGER.error("Cannot send a packet to all players. Server is not available.");
             return;
@@ -44,7 +44,7 @@ public class PacketsImpl {
         }
     }
 
-    public static void sendToPlayersNear(Packet packet, @NotNull ServerLevel level, @Nullable ServerPlayer excludedPlayer,
+    public void sendToPlayersNear(Packet packet, @NotNull ServerLevel level, @Nullable ServerPlayer excludedPlayer,
                                          double x, double y, double z, double radius) {
         sendToClients(packet, player -> {
             if (player != excludedPlayer && player.level().dimension() == level.dimension()) {

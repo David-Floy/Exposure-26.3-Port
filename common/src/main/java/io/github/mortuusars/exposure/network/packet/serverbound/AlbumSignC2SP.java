@@ -9,14 +9,14 @@ import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.PacketFlow;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.NotNull;
 
 public record AlbumSignC2SP(int slot, String title, String author) implements Packet {
-    public static final ResourceLocation ID = Exposure.resource("album_sign");
+    public static final Identifier ID = Exposure.resource("album_sign");
     public static final CustomPacketPayload.Type<AlbumSignC2SP> TYPE = new CustomPacketPayload.Type<>(ID);
 
     public static final StreamCodec<FriendlyByteBuf, AlbumSignC2SP> STREAM_CODEC = StreamCodec.composite(
@@ -34,6 +34,12 @@ public record AlbumSignC2SP(int slot, String title, String author) implements Pa
     @Override
     public boolean handle(PacketFlow flow, Player player) {
         Preconditions.checkState(player != null, "Cannot handle packet: Player was null");
+        if (slot < 0 || slot >= player.getInventory().getContainerSize()) {
+            return false;
+        }
+        if (!author.equals(player.getScoreboardName())) {
+            return false;
+        }
 
         ItemStack albumStack = player.getInventory().getItem(slot());
         if (albumStack.getItem() instanceof AlbumItem albumItem) {

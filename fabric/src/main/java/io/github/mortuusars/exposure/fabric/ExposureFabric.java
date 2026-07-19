@@ -1,8 +1,10 @@
 package io.github.mortuusars.exposure.fabric;
 
-import fuzs.forgeconfigapiport.fabric.api.neoforge.v4.NeoForgeConfigRegistry;
+import fuzs.forgeconfigapiport.fabric.api.v5.ConfigRegistry;
 import io.github.mortuusars.exposure.Config;
 import io.github.mortuusars.exposure.Exposure;
+import io.github.mortuusars.exposure.PlatformHelper;
+import io.github.mortuusars.exposure.Register;
 import io.github.mortuusars.exposure.data.ColorPalette;
 import io.github.mortuusars.exposure.data.Filter;
 import io.github.mortuusars.exposure.data.Lens;
@@ -10,14 +12,17 @@ import io.github.mortuusars.exposure.event.CommonEvents;
 import io.github.mortuusars.exposure.event.ServerEvents;
 import io.github.mortuusars.exposure.network.fabric.FabricC2SPackets;
 import io.github.mortuusars.exposure.network.fabric.FabricS2CPackets;
+import io.github.mortuusars.exposure.network.Packets;
+import io.github.mortuusars.exposure.network.fabric.PacketsImpl;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.event.registry.DynamicRegistries;
-import net.fabricmc.fabric.api.itemgroup.v1.ItemGroupEvents;
+import net.fabricmc.fabric.api.creativetab.v1.CreativeModeTabEvents;
 import net.fabricmc.fabric.api.loot.v3.LootTableEvents;
 import net.fabricmc.fabric.api.loot.v3.LootTableSource;
 import net.minecraft.core.HolderLookup;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.item.CreativeModeTabs;
@@ -36,15 +41,39 @@ public class ExposureFabric implements ModInitializer {
 
     @Override
     public void onInitialize() {
+        PlatformHelper.bind(new PlatformHelperImpl());
+        Register.bind(new RegisterImpl());
+        Packets.bind(new PacketsImpl());
+
         Exposure.init();
+
+        CreativeModeTabEvents.modifyOutputEvent(BuiltInRegistries.CREATIVE_MODE_TAB
+                .getResourceKey(Exposure.CreativeTabs.EXPOSURE.get()).orElseThrow()).register(entries -> {
+            entries.accept(Exposure.Items.CAMERA.get());
+            entries.accept(Exposure.Items.CAMERA_STAND.get());
+            entries.accept(Exposure.Items.BLACK_AND_WHITE_FILM.get());
+            entries.accept(Exposure.Items.COLOR_FILM.get());
+            entries.accept(Exposure.Items.HIGH_SENSITIVITY_BLACK_AND_WHITE_FILM.get());
+            entries.accept(Exposure.Items.HIGH_SENSITIVITY_COLOR_FILM.get());
+            entries.accept(Exposure.Items.DEVELOPED_BLACK_AND_WHITE_FILM.get());
+            entries.accept(Exposure.Items.DEVELOPED_COLOR_FILM.get());
+            entries.accept(Exposure.Items.PHOTOGRAPH.get());
+            entries.accept(Exposure.Items.AGED_PHOTOGRAPH.get());
+            entries.accept(Exposure.Items.STACKED_PHOTOGRAPHS.get());
+            entries.accept(Exposure.Items.ALBUM.get());
+            entries.accept(Exposure.Items.PHOTOGRAPH_FRAME.get());
+            entries.accept(Exposure.Items.CLEAR_PHOTOGRAPH_FRAME.get());
+            entries.accept(Exposure.Items.INTERPLANAR_PROJECTOR.get());
+            entries.accept(Exposure.Items.LIGHTROOM.get());
+        });
 
         DynamicRegistries.registerSynced(Exposure.Registries.COLOR_PALETTE, ColorPalette.CODEC, ColorPalette.CODEC);
         DynamicRegistries.registerSynced(Exposure.Registries.LENS, Lens.CODEC, Lens.CODEC);
         DynamicRegistries.registerSynced(Exposure.Registries.FILTER, Filter.CODEC, Filter.CODEC);
 
-        NeoForgeConfigRegistry.INSTANCE.register(Exposure.ID, ModConfig.Type.SERVER, Config.Server.SPEC);
-        NeoForgeConfigRegistry.INSTANCE.register(Exposure.ID, ModConfig.Type.COMMON, Config.Common.SPEC);
-        NeoForgeConfigRegistry.INSTANCE.register(Exposure.ID, ModConfig.Type.CLIENT, Config.Client.SPEC);
+        ConfigRegistry.INSTANCE.register(Exposure.ID, ModConfig.Type.SERVER, Config.Server.SPEC);
+        ConfigRegistry.INSTANCE.register(Exposure.ID, ModConfig.Type.COMMON, Config.Common.SPEC);
+        ConfigRegistry.INSTANCE.register(Exposure.ID, ModConfig.Type.CLIENT, Config.Client.SPEC);
 
         CommandRegistrationCallback.EVENT.register(CommonEvents::registerCommands);
 

@@ -4,7 +4,7 @@ import io.github.mortuusars.exposure.Config;
 import io.github.mortuusars.exposure.Exposure;
 import io.github.mortuusars.exposure.world.camera.capture.DitherMode;
 import io.github.mortuusars.exposure.world.camera.capture.Projection;
-import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.Minecraft;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.SlotAccess;
@@ -41,25 +41,27 @@ public class InterplanarProjectorItem extends Item {
     }
 
     @Override
-    public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> components, TooltipFlag tooltipFlag) {
+    public void appendHoverText(ItemStack stack, TooltipContext context,
+                                net.minecraft.world.item.component.TooltipDisplay tooltipDisplay,
+                                java.util.function.Consumer<Component> tooltipConsumer, TooltipFlag tooltipFlag) {
         if (!isAllowed()) {
-            components.add(Component.translatable("item.exposure.interplanar_projector.tooltip.disabled"));
+            tooltipConsumer.accept(Component.translatable("item.exposure.interplanar_projector.tooltip.disabled"));
         }
 
         if (getProjection(stack).isPresent()) {
-            components.add(getMode(stack).translate());
+            tooltipConsumer.accept(getMode(stack).translate());
         }
 
-        if (Screen.hasShiftDown()) {
+        if (Minecraft.getInstance().hasShiftDown()) {
             if (isConsumable(stack)) {
-                components.add(Component.translatable("item.exposure.interplanar_projector.tooltip.consumed_info"));
+                tooltipConsumer.accept(Component.translatable("item.exposure.interplanar_projector.tooltip.consumed_info"));
             }
-            components.add(Component.translatable("item.exposure.interplanar_projector.tooltip.info"));
+            tooltipConsumer.accept(Component.translatable("item.exposure.interplanar_projector.tooltip.info"));
             if (getProjection(stack).isPresent()) {
-                components.add(Component.translatable("item.exposure.interplanar_projector.tooltip.change_mode_info"));
+                tooltipConsumer.accept(Component.translatable("item.exposure.interplanar_projector.tooltip.change_mode_info"));
             }
         } else {
-            components.add(Component.translatable("tooltip.exposure.hold_for_details"));
+            tooltipConsumer.accept(Component.translatable("tooltip.exposure.hold_for_details"));
         }
     }
 
@@ -68,7 +70,7 @@ public class InterplanarProjectorItem extends Item {
         if (other.isEmpty() && action == ClickAction.SECONDARY && getProjection(stack).isPresent()) {
             setMode(stack, getMode(stack).cycle());
             slot.setChanged();
-            if (player.level().isClientSide) {
+            if (player.level().isClientSide()) {
                 player.playSound(Exposure.SoundEvents.CAMERA_GENERIC_CLICK.get(), 0.6f, 1f);
             }
             return true;

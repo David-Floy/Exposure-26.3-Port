@@ -7,10 +7,11 @@ import io.github.mortuusars.exposure.client.gui.screen.element.textbox.Horizonta
 import io.github.mortuusars.exposure.client.gui.screen.element.textbox.TextBox;
 import io.github.mortuusars.exposure.client.util.Minecrft;
 import net.minecraft.ChatFormatting;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.ImageButton;
 import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.components.WidgetSprites;
+import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
@@ -49,7 +50,7 @@ public class AlbumSigningScreen extends Screen {
                 () -> titleText, text -> titleText = text)
                 .setFontColor(Config.getColor(Config.Client.ALBUM_FONT_MAIN_COLOR))
                 .setSelectionColor(SELECTION_COLOR, SELECTION_UNFOCUSED_COLOR);
-        titleTextBox.textValidator = text -> text != null && font.wordWrapHeight(text, 108) <= 9 && !text.contains("\n");
+        titleTextBox.textValidator = text -> text != null && font.wordWrapHeight(Component.literal(text), 108) <= 9 && !text.contains("\n");
         titleTextBox.horizontalAlignment = HorizontalAlignment.CENTER;
         addRenderableWidget(titleTextBox);
 
@@ -89,25 +90,24 @@ public class AlbumSigningScreen extends Screen {
     }
 
     @Override
-    public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
+    public void extractRenderState(GuiGraphicsExtractor guiGraphics, int mouseX, int mouseY, float partialTick) {
         updateButtons();
-        super.render(guiGraphics, mouseX, mouseY, partialTick);
+        super.extractRenderState(guiGraphics, mouseX, mouseY, partialTick);
         renderLabels(guiGraphics);
     }
 
     @Override
-    public void renderBackground(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
-        renderTransparentBackground(guiGraphics);
-        guiGraphics.blit(AlbumGUI.TEXTURE, leftPos, topPos, 0, 298,
-                0, imageWidth, imageHeight, 512, 512);
+    public void extractBackground(GuiGraphicsExtractor guiGraphics, int mouseX, int mouseY, float partialTick) {
+        extractTransparentBackground(guiGraphics);
+        AlbumGUI.SIGNING_BACKGROUND.blit(guiGraphics, leftPos, topPos);
     }
 
-    private void renderLabels(GuiGraphics guiGraphics) {
+    private void renderLabels(GuiGraphicsExtractor guiGraphics) {
         MutableComponent component = Component.translatable("gui.exposure.album.enter_title");
-        guiGraphics.drawString(font, component,  leftPos + 149 / 2 - font.width(component) / 2, topPos + 50, 0xf5ebd0, false);
+        guiGraphics.text(font, component,  leftPos + 149 / 2 - font.width(component) / 2, topPos + 50, 0xf5ebd0, false);
 
         component = Component.translatable("gui.exposure.album.by_author", Minecrft.player().getScoreboardName());
-        guiGraphics.drawString(font, component, leftPos + 149 / 2 - font.width(component) / 2, topPos + 84, 0xc7b496, false);
+        guiGraphics.text(font, component, leftPos + 149 / 2 - font.width(component) / 2, topPos + 84, 0xc7b496, false);
     }
 
     protected void signAlbum() {
@@ -123,9 +123,10 @@ public class AlbumSigningScreen extends Screen {
     }
 
     @Override
-    public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
+    public boolean keyPressed(KeyEvent event) {
+        int keyCode = event.key();
         if (keyCode == InputConstants.KEY_TAB) {
-            return super.keyPressed(keyCode, scanCode, modifiers);
+            return super.keyPressed(event);
         }
 
         if (keyCode == InputConstants.KEY_ESCAPE) {
@@ -134,9 +135,9 @@ public class AlbumSigningScreen extends Screen {
         }
 
         if (titleTextBox.isFocused()) {
-            return titleTextBox.keyPressed(keyCode, scanCode, modifiers);
+            return titleTextBox.keyPressed(event);
         }
 
-        return super.keyPressed(keyCode, scanCode, modifiers);
+        return super.keyPressed(event);
     }
 }

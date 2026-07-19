@@ -1,10 +1,12 @@
 {
   "required": true,
   "package": "io.github.mortuusars.exposure.mixin",
-  "compatibilityLevel": "JAVA_17",
+  "compatibilityLevel": "JAVA_25",
   "minVersion": "0.8",
   "client": [
     "client.AnvilScreenMixin",
+    "client.AvatarRendererMixin",
+    "client.AvatarRenderStateMixin",
     "client.BuggerKeyboardHandlerMixin",
     "client.BuggerScreenOverlayMixin",
     "client.BuggerScreenRenderLinesInvoker",
@@ -13,11 +15,14 @@
     "client.EntityMixin",
     "client.ExposureLightTextureMixin",
     "client.GameRendererMixin",
+    "client.GameRendererLightmapAccessor",
     "client.GuiMixin",
     "client.HumanoidModelMixin",
+    "client.HumanoidMobRendererMixin",
+    "client.HumanoidRenderStateMixin",
     "client.ItemFrameRendererMixin",
+    "client.ItemFrameRenderStateMixin",
     "client.ItemInHandRendererMixin",
-    "client.ItemRendererMixin",
     "client.KeyBindTooltipMixin",
     "client.KeyboardHandlerMixin",
     "client.KeyMappingMixin",
@@ -25,7 +30,7 @@
     "client.MinecraftMixin",
     "client.MouseHandlerMixin",
     "client.MultiPlayerGameModeMixin",
-    "compat.easy_anvils.ModAnvilScreenMixin"
+    "client.PlayerItemInHandLayerMixin"
   ],
   "mixins": [
     "AnvilMenuMixin",
@@ -40,8 +45,7 @@
     "PotionContentsMixin",
     "ServerEntityMixin",
     "ServerGamePacketListenerMixin",
-    "ServerPlayerMixin",
-    "compat.easy_anvils.ModAnvilMenuMixin"
+    "ServerPlayerMixin"
   ],
   "injectors": {
     "defaultRequire": 1

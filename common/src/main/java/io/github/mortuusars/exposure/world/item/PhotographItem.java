@@ -12,7 +12,7 @@ import io.github.mortuusars.exposure.world.item.util.ItemAndStack;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResultHolder;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.SlotAccess;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
@@ -49,7 +49,10 @@ public class PhotographItem extends Item {
     }
 
     @Override
-    public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltipComponents, TooltipFlag tooltipFlag) {
+    public void appendHoverText(ItemStack stack, TooltipContext context,
+                                net.minecraft.world.item.component.TooltipDisplay tooltipDisplay,
+                                java.util.function.Consumer<Component> tooltipConsumer, TooltipFlag tooltipFlag) {
+        List<Component> tooltipComponents = new java.util.ArrayList<>();
         @Nullable Integer generation = stack.get(Exposure.DataComponents.PHOTOGRAPH_GENERATION);
         if (generation != null) {
             if (generation > 0)
@@ -59,6 +62,7 @@ public class PhotographItem extends Item {
 
         @Nullable Frame frame = stack.get(Exposure.DataComponents.PHOTOGRAPH_FRAME);
         if (frame == null) {
+            tooltipComponents.forEach(tooltipConsumer);
             return;
         }
 
@@ -82,24 +86,26 @@ public class PhotographItem extends Item {
                     texture -> "Texture: " + texture);
             tooltipComponents.add(Component.literal(identifier).withStyle(ChatFormatting.DARK_GRAY));
         }
+
+        tooltipComponents.forEach(tooltipConsumer);
     }
 
     @Override
-    public @NotNull InteractionResultHolder<ItemStack> use(@NotNull Level level, Player player, @NotNull InteractionHand hand) {
+    public @NotNull InteractionResult use(@NotNull Level level, Player player, @NotNull InteractionHand hand) {
         ItemStack itemInHand = player.getItemInHand(hand);
 
         Frame frame = getFrame(itemInHand);
         if (frame == Frame.EMPTY || frame.identifier().isEmpty()) {
-            return InteractionResultHolder.pass(itemInHand);
+            return InteractionResult.PASS;
         }
 
-        if (level.isClientSide) {
-            int slot = hand == InteractionHand.OFF_HAND ? Inventory.SLOT_OFFHAND : player.getInventory().selected;
+        if (level.isClientSide()) {
+            int slot = hand == InteractionHand.OFF_HAND ? Inventory.SLOT_OFFHAND : player.getInventory().getSelectedSlot();
             ClientGUI.openPhotographsScreenFromItem(slot);
             player.playSound(Exposure.SoundEvents.PHOTOGRAPH_RUSTLE.get(), 0.6f, 1.1f);
         }
 
-        return InteractionResultHolder.success(itemInHand);
+        return InteractionResult.SUCCESS;
     }
 
     @Override

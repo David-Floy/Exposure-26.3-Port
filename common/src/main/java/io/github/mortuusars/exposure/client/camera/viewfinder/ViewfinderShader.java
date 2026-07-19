@@ -1,28 +1,24 @@
 package io.github.mortuusars.exposure.client.camera.viewfinder;
 
-import com.google.gson.JsonSyntaxException;
 import com.mojang.blaze3d.systems.RenderSystem;
 import io.github.mortuusars.exposure.Exposure;
 import io.github.mortuusars.exposure.client.util.Minecrft;
-import io.github.mortuusars.exposure.world.camera.Camera;
+import io.github.mortuusars.exposure.client.util.Shader;
 import io.github.mortuusars.exposure.data.Filter;
 import io.github.mortuusars.exposure.data.Filters;
+import io.github.mortuusars.exposure.world.camera.Camera;
 import io.github.mortuusars.exposure.world.item.camera.Attachment;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.PostChain;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.Nullable;
-
-import java.io.IOException;
 
 public class ViewfinderShader implements AutoCloseable {
     private final Minecraft minecraft;
     private final Camera camera;
     private final Viewfinder viewfinder;
 
-    @Nullable
-    private PostChain shader;
+    private @Nullable Identifier shaderLocation;
     private boolean active;
 
     public ViewfinderShader(Camera camera, Viewfinder viewfinder) {
@@ -32,44 +28,27 @@ public class ViewfinderShader implements AutoCloseable {
         this.update();
     }
 
-    public void apply(ResourceLocation shaderLocation) {
-        if (shader != null) {
-            if (shader.getName().equals(shaderLocation.toString())) {
-                return;
-            }
-
-            shader.close();
+    public void apply(Identifier location) {
+        RenderSystem.assertOnRenderThread();
+        if (location.equals(shaderLocation)) {
+            return;
         }
 
-        try {
-            shader = new PostChain(minecraft.getTextureManager(), minecraft.getResourceManager(),
-                    minecraft.getMainRenderTarget(), shaderLocation);
-            shader.resize(minecraft.getWindow().getWidth(), minecraft.getWindow().getHeight());
+        shaderLocation = null;
+        if (Shader.isAvailable(location)) {
+            shaderLocation = location;
             active = true;
-        } catch (IOException e) {
-            Exposure.LOGGER.warn("Failed to load shader: {}", shaderLocation, e);
-            active = false;
-        } catch (JsonSyntaxException e) {
-            Exposure.LOGGER.warn("Failed to parse shader: {}", shaderLocation, e);
+        } else {
+            Exposure.LOGGER.warn("Failed to select viewfinder post effect '{}'.", location);
             active = false;
         }
     }
 
-    public void resize(int width, int height) {
-        if (shader != null) {
-            shader.resize(width, height);
-        }
-    }
-
-    /**
-     * Processes current viewfinder shader (if it is present and active).
-     */
+    /** Processes the current viewfinder post effect when it is present and active. */
     public void process() {
-        if (shader != null && active) {
-            RenderSystem.disableBlend();
-            RenderSystem.disableDepthTest();
-            RenderSystem.resetTextureMatrix();
-            shader.process(minecraft.getTimer().getGameTimeDeltaTicks());
+        Identifier location = shaderLocation;
+        if (location != null && active) {
+            Shader.process(location, minecraft.getMainRenderTarget());
         }
     }
 
@@ -86,11 +65,8 @@ public class ViewfinderShader implements AutoCloseable {
     }
 
     public void remove() {
-        if (shader != null) {
-            shader.close();
-        }
-
-        shader = null;
+        RenderSystem.assertOnRenderThread();
+        shaderLocation = null;
     }
 
     @Override

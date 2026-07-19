@@ -3,6 +3,7 @@ package io.github.mortuusars.exposure.world.item.crafting.recipe;
 import io.github.mortuusars.exposure.Exposure;
 import net.minecraft.core.NonNullList;
 import net.minecraft.world.item.*;
+import net.minecraft.world.item.ItemStackTemplate;
 import net.minecraft.world.item.crafting.CraftingBookCategory;
 import net.minecraft.world.item.crafting.CraftingInput;
 import net.minecraft.world.item.crafting.Ingredient;
@@ -11,12 +12,12 @@ import org.jetbrains.annotations.NotNull;
 
 public class PhotographAgingRecipe extends ComponentTransferringRecipe {
     public PhotographAgingRecipe(CraftingBookCategory category, Ingredient sourceIngredient,
-                                 NonNullList<Ingredient> ingredients, ItemStack result) {
+                                 NonNullList<Ingredient> ingredients, ItemStackTemplate result) {
         super(category, sourceIngredient, ingredients, result);
     }
 
     @Override
-    public @NotNull RecipeSerializer<?> getSerializer() {
+    public @NotNull RecipeSerializer<PhotographAgingRecipe> getSerializer() {
         return Exposure.RecipeSerializers.PHOTOGRAPH_AGING.get();
     }
 

@@ -9,7 +9,11 @@ import io.github.mortuusars.exposure.util.UnixTimestamp;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.StringUtil;
-import net.minecraft.world.level.storage.DimensionDataStorage;
+import net.minecraft.resources.Identifier;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.dimension.DimensionType;
+import net.minecraft.world.level.saveddata.SavedDataType;
+import net.minecraft.world.level.storage.SavedDataStorage;
 import net.minecraft.world.level.storage.LevelResource;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -19,6 +23,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiConsumer;
@@ -27,11 +32,12 @@ import java.util.function.Function;
 public class ExposureRepository {
     public static final int EXPECTED_TIMEOUT_SECONDS = 60;
     public static final String EXPOSURES_DIRECTORY_NAME = "exposures";
+    public static final String ENCODED_IDS_DIRECTORY_NAME = "_encoded";
 
     private static final Logger LOGGER = LogUtils.getLogger();
 
     protected final MinecraftServer server;
-    protected final DimensionDataStorage dataStorage;
+    protected final SavedDataStorage dataStorage;
     protected final Path worldFolderPath;
     protected final Path exposuresFolderPath;
 
@@ -40,36 +46,50 @@ public class ExposureRepository {
     public ExposureRepository(MinecraftServer server) {
         this.server = server;
         this.dataStorage = server.overworld().getDataStorage();
-        this.worldFolderPath = server.getWorldPath(LevelResource.ROOT);
+        this.worldFolderPath = getOverworldFolderPath(server.getWorldPath(LevelResource.ROOT));
         this.exposuresFolderPath = worldFolderPath.resolve("data/" + EXPOSURES_DIRECTORY_NAME);
+    }
+
+    /**
+     * SavedDataStorage became dimension-scoped in 26.1.2. Manual file operations must use
+     * the same overworld directory as {@link MinecraftServer#overworld()}.
+     */
+    static Path getOverworldFolderPath(Path worldRoot) {
+        return DimensionType.getStorageFolder(Level.OVERWORLD, worldRoot);
     }
 
     public List<String> getAllIds() {
         // Save exposures that are in cache and waiting to be saved:
-        dataStorage.save();
+        dataStorage.saveAndJoin();
 
-        File folder = exposuresFolderPath.toFile();
-
-        @Nullable File[] filesList = folder.listFiles();
-        if (filesList == null) {
+        if (!Files.isDirectory(exposuresFolderPath)) {
             return Collections.emptyList();
         }
 
-        return Arrays.stream(filesList)
-                .filter(file -> file != null && file.isFile())
-                .map(file -> com.google.common.io.Files.getNameWithoutExtension(file.getName()))
-                .toList();
+        try (var paths = Files.walk(exposuresFolderPath)) {
+            return paths.filter(Files::isRegularFile)
+                    .filter(path -> path.getFileName().toString().endsWith(".dat"))
+                    .map(exposuresFolderPath::relativize)
+                    .map(Path::toString)
+                    .map(path -> path.substring(0, path.length() - ".dat".length()).replace(File.separatorChar, '/'))
+                    .map(this::decodeStoragePath)
+                    .flatMap(Optional::stream)
+                    .toList();
+        } catch (IOException e) {
+            LOGGER.error("Cannot list saved exposures in '{}'.", exposuresFolderPath, e);
+            return Collections.emptyList();
+        }
     }
 
     public RequestedPalettedExposure load(@NotNull String id) {
         Preconditions.checkNotNull(id, "id");
         Preconditions.checkArgument(!StringUtil.isBlank(id), "Cannot load exposure: id is empty.");
 
-        String name = EXPOSURES_DIRECTORY_NAME + "/" + id;
-        @Nullable ExposureData exposureData = dataStorage.get(ExposureData.factory(), name);
+        migrateLegacyExposureFile(id);
+        @Nullable ExposureData exposureData = dataStorage.get(exposureDataType(id));
 
         if (exposureData == null) {
-            File filepath = exposuresFolderPath.resolve(id + ".dat").toFile();
+            File filepath = storageFileForId(id).toFile();
             if (!filepath.exists()) {
                 LOGGER.error("Exposure '{}' was not loaded. File '{}' does not exist.", id, filepath);
                 return RequestedPalettedExposure.NOT_FOUND;
@@ -86,8 +106,8 @@ public class ExposureRepository {
         Preconditions.checkArgument(!StringUtil.isBlank(id), "Cannot save exposure: id is null or empty.");
 
         if (ensureExposuresDirectoryExists()) {
-            String saveDataName = EXPOSURES_DIRECTORY_NAME + "/" + id;
-            dataStorage.set(saveDataName, data);
+            migrateLegacyExposureFile(id);
+            dataStorage.set(exposureDataType(id), data);
             data.setDirty();
             Packets.sendToAllClients(new ExposureDataChangedS2CP(id));
         }
@@ -105,7 +125,13 @@ public class ExposureRepository {
     }
 
     public boolean delete(String id) throws IOException {
-        return Files.deleteIfExists(exposuresFolderPath.resolve(id + ".dat"));
+        Path storageFile = storageFileForId(id);
+        boolean deleted = Files.deleteIfExists(storageFile);
+        Path legacyFile = safeExposurePath(id + ".dat");
+        if (!legacyFile.equals(storageFile)) {
+            deleted |= Files.deleteIfExists(legacyFile);
+        }
+        return deleted;
     }
 
     public void expect(ServerPlayer player, String id, BiConsumer<ServerPlayer, String> onReceived) {
@@ -201,5 +227,64 @@ public class ExposureRepository {
             LOGGER.error("Failed to create exposure storage directory: {}", e.toString());
             return false;
         }
+    }
+
+    protected SavedDataType<ExposureData> exposureDataType(String id) {
+        return ExposureData.type(Identifier.fromNamespaceAndPath(EXPOSURES_DIRECTORY_NAME, storagePathForId(id)));
+    }
+
+    protected String storagePathForId(String id) {
+        if (Identifier.tryBuild(EXPOSURES_DIRECTORY_NAME, id) != null) {
+            return id;
+        }
+        return ENCODED_IDS_DIRECTORY_NAME + "/" + HexFormat.of()
+                .formatHex(id.getBytes(StandardCharsets.UTF_8));
+    }
+
+    protected Optional<String> decodeStoragePath(String path) {
+        String prefix = ENCODED_IDS_DIRECTORY_NAME + "/";
+        if (!path.startsWith(prefix)) {
+            return Optional.of(path);
+        }
+
+        try {
+            return Optional.of(new String(HexFormat.of().parseHex(path.substring(prefix.length())), StandardCharsets.UTF_8));
+        } catch (IllegalArgumentException e) {
+            LOGGER.error("Cannot decode stored exposure id path '{}'.", path, e);
+            return Optional.empty();
+        }
+    }
+
+    protected void migrateLegacyExposureFile(String id) {
+        String storagePath = storagePathForId(id);
+        if (storagePath.equals(id)) {
+            return;
+        }
+
+        Path legacyFile = safeExposurePath(id + ".dat");
+        Path targetFile = safeExposurePath(storagePath + ".dat");
+        if (!Files.exists(legacyFile) || Files.exists(targetFile)) {
+            return;
+        }
+
+        try {
+            Files.createDirectories(targetFile.getParent());
+            Files.move(legacyFile, targetFile);
+            LOGGER.info("Migrated legacy exposure file '{}' to path-safe storage '{}'.", legacyFile, targetFile);
+        } catch (IOException e) {
+            LOGGER.error("Cannot migrate legacy exposure file '{}' to '{}'.", legacyFile, targetFile, e);
+        }
+    }
+
+    protected Path storageFileForId(String id) {
+        return safeExposurePath(storagePathForId(id) + ".dat");
+    }
+
+    protected Path safeExposurePath(String relativePath) {
+        Path path = exposuresFolderPath.resolve(relativePath).normalize();
+        if (!path.startsWith(exposuresFolderPath.normalize())) {
+            throw new IllegalArgumentException("Exposure id resolves outside the exposure storage: " + relativePath);
+        }
+        return path;
     }
 }

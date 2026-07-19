@@ -18,6 +18,7 @@ import org.slf4j.Logger;
 
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class ExportExposuresTask extends Task<Result<Boolean>> {
@@ -46,7 +47,7 @@ public class ExportExposuresTask extends Task<Result<Boolean>> {
 
     public static boolean start(List<String> ids, ExportSize size, ExportLook look) {
         if (ExportExposuresTask.isRunning()) {
-            Minecrft.player().displayClientMessage(Component.translatable("task.exposure.export.already_running"), false);
+            Minecrft.player().sendSystemMessage(Component.translatable("task.exposure.export.already_running"));
             return false;
         }
         ExposureClient.cycles().addParallelTask(new ExportExposuresTask(ids, size, look));
@@ -77,6 +78,13 @@ public class ExportExposuresTask extends Task<Result<Boolean>> {
         return future;
     }
 
+    @Override
+    public void tick() {
+        if (future != null && future.isDone()) {
+            setDone();
+        }
+    }
+
     protected Result<Boolean> export() {
         int total = ids.size();
         AtomicInteger exported = new AtomicInteger();
@@ -94,7 +102,7 @@ public class ExportExposuresTask extends Task<Result<Boolean>> {
             for (int attempt = 0; attempt < 50; attempt++) {
                 updateStatus(Component.translatable("task.exposure.export.status.requesting", id, exported, total));
 
-                RequestedPalettedExposure request = ExposureClient.exposureStore().getOrRequest(id);
+                RequestedPalettedExposure request = requestExposureOnClientThread(id);
                 if (request.getData().isPresent()) {
                     exposure = request.getData().get();
                     break;
@@ -115,7 +123,7 @@ public class ExportExposuresTask extends Task<Result<Boolean>> {
 
             try {
                 String fileName = id + look.getIdSuffix();
-                new ImageExporter(exposure, fileName)
+                boolean saved = new ImageExporter(exposure, fileName)
                         .modify(ImageEffect.chain(
                                 look.getModifier(),
                                 ImageEffect.Resize.multiplier(size.getMultiplier())
@@ -128,10 +136,13 @@ public class ExportExposuresTask extends Task<Result<Boolean>> {
                             print(Component.translatable("task.exposure.export.exported")
                                     .append("'" + fileName + "'").withStyle(Style.EMPTY
                                             .withUnderlined(true)
-                                            .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Component.literal("Open")))
-                                            .withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_FILE, file.getAbsolutePath()))));
+                                            .withHoverEvent(new HoverEvent.ShowText(Component.literal("Open")))
+                                            .withClickEvent(new ClickEvent.OpenFile(file))));
                         })
                         .export();
+                if (!saved) {
+                    print(Component.translatable("task.exposure.export.error", id, "write failed"));
+                }
             } catch (Exception e) {
                 print(Component.translatable("task.exposure.export.error", id, e.getMessage()));
                 LOGGER.error("Failed to export exposure '{}': ", id, e);
@@ -149,11 +160,29 @@ public class ExportExposuresTask extends Task<Result<Boolean>> {
         return Result.success(true);
     }
 
+    private RequestedPalettedExposure requestExposureOnClientThread(String id) {
+        CompletableFuture<RequestedPalettedExposure> request = new CompletableFuture<>();
+        Minecrft.execute(() -> {
+            try {
+                request.complete(ExposureClient.exposureStore().getOrRequest(id));
+            } catch (Throwable throwable) {
+                request.completeExceptionally(throwable);
+            }
+        });
+
+        try {
+            return request.get(5, TimeUnit.SECONDS);
+        } catch (Exception e) {
+            LOGGER.error("Failed to request exposure '{}' on the client thread: ", id, e);
+            return RequestedPalettedExposure.CANNOT_LOAD;
+        }
+    }
+
     protected void print(MutableComponent message) {
-        Minecrft.execute(() -> Minecrft.player().displayClientMessage(message, false));
+        Minecrft.execute(() -> Minecrft.player().sendSystemMessage(message));
     }
 
     protected void updateStatus(MutableComponent status) {
-        Minecrft.execute(() -> Minecrft.player().displayClientMessage(status, true));
+        Minecrft.execute(() -> Minecrft.player().sendOverlayMessage(status));
     }
 }

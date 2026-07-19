@@ -10,6 +10,8 @@ import io.github.mortuusars.exposure.world.camera.Camera;
 import io.github.mortuusars.exposure.world.item.camera.CameraItem;
 import net.minecraft.client.CameraType;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.input.KeyEvent;
+import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.util.Mth;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -134,30 +136,32 @@ public class Viewfinder {
         if (controlsActive()) {
             Minecrft.get().setScreen(null);
         }
+        controlsScreen = null;
     }
 
-    public boolean keyPressed(int key, int scanCode, int action, int modifiers) {
-        return (action == InputConstants.PRESS && keyBindings.keyPressed(key, scanCode, modifiers))
-              || (action == InputConstants.RELEASE && keyBindings.keyReleased(key, scanCode, modifiers))
-              || zoom().keyPressed(key, scanCode, action, modifiers);
+    public boolean keyPressed(KeyEvent event, int action) {
+        return (action == InputConstants.PRESS && keyBindings.keyPressed(event))
+              || (action == InputConstants.RELEASE && keyBindings.keyReleased(event))
+              || zoom().keyPressed(event, action);
     }
 
-    public boolean mouseClicked(int button, int action) {
+    public boolean mouseClicked(MouseButtonEvent event, int action) {
         if (!isLookingThrough()) {
             return false;
         }
 
         if (controlsActive()) return false;
 
-        if (!canAttack() && Minecrft.options().keyAttack.matchesMouse(button))
+        if (!canAttack() && Minecrft.options().keyAttack.matchesMouse(event))
             return true; // Block attacks
 
-        if (KeyboardHandler.getCameraControlsKey().matchesMouse(button)) {
+        if (KeyboardHandler.getCameraControlsKey().matchesMouse(event)) {
             openControlsScreen();
             return false; // Do not cancel the event to keep sneaking
         }
 
-        if (Config.Client.VIEWFINDER_MIDDLE_CLICK_CONTROLS.get() && button == InputConstants.MOUSE_BUTTON_MIDDLE) {
+        if (Config.Client.VIEWFINDER_MIDDLE_CLICK_CONTROLS.get()
+                && event.button() == InputConstants.MOUSE_BUTTON_MIDDLE) {
             openControlsScreen();
             return true;
         }

@@ -27,6 +27,7 @@
   "advancement.exposure.wildlife_archivist.title": "Archivista de Vida Silvestre",
   "block.exposure.lightroom": "Cuarto Oscuro",
   "category.exposure": "Exposure",
+  "key.category.exposure.main": "Exposure",
   "command.exposure.debug.develop.fail.wrong_item": "El jugador debe sostener un Rollo de Película en la mano.",
   "command.exposure.debug.develop.success": "Desarrollado %s",
   "command.exposure.export.confirm": "[¿Confirmar?]",

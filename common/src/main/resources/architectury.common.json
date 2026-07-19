@@ -1,9 +1,0 @@
-{
-  "accessWidener": "exposure.accesswidener",
-  "injected_interfaces": {
-    "net/minecraft/class_1657": [
-      "io/github/mortuusars/exposure/world/entity/CameraHolder",
-      "io/github/mortuusars/exposure/world/entity/CameraOperator"
-    ]
-  }
-}

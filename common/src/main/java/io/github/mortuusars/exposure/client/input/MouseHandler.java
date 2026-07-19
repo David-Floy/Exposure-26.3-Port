@@ -3,6 +3,9 @@ package io.github.mortuusars.exposure.client.input;
 import com.mojang.blaze3d.platform.InputConstants;
 import io.github.mortuusars.exposure.client.camera.CameraClient;
 import io.github.mortuusars.exposure.client.camera.viewfinder.Viewfinder;
+import io.github.mortuusars.exposure.client.util.Minecrft;
+import net.minecraft.client.input.MouseButtonEvent;
+import net.minecraft.client.input.MouseButtonInfo;
 
 public class MouseHandler {
     private static final boolean[] heldMouseButtons = new boolean[12];
@@ -11,11 +14,18 @@ public class MouseHandler {
         return button >= 0 && button < heldMouseButtons.length && heldMouseButtons[button];
     }
 
-    public static boolean buttonPressed(int button, int action, int modifiers) {
+    public static boolean buttonPressed(MouseButtonInfo buttonInfo, int action) {
+        int button = buttonInfo.button();
         if (button >= 0 && button < heldMouseButtons.length)
             heldMouseButtons[button] = action == InputConstants.PRESS;
 
-        return CameraClient.viewfinder() != null && CameraClient.viewfinder().mouseClicked(button, action);
+        var minecraft = Minecrft.get();
+        var window = minecraft.getWindow();
+        MouseButtonEvent event = new MouseButtonEvent(
+                minecraft.mouseHandler.getScaledXPos(window),
+                minecraft.mouseHandler.getScaledYPos(window),
+                buttonInfo);
+        return CameraClient.viewfinder() != null && CameraClient.viewfinder().mouseClicked(event, action);
     }
 
     public static boolean scrolled(double amount) {

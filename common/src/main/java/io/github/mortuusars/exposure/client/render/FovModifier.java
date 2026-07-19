@@ -43,6 +43,13 @@ public class FovModifier {
         overrideFov = -1;
     }
 
+    /** Immediately clears transient FOV state during a world/client reset. */
+    public static void reset() {
+        overrideFov = -1;
+        lastFov = -1;
+        restoringAnimation = null;
+    }
+
     private static double restoreToOriginal(double originalValue) {
         if (lastFov == -1) {
             return originalValue;

@@ -4,16 +4,18 @@ import io.github.mortuusars.exposure.Exposure;
 import io.github.mortuusars.exposure.world.item.PhotographItem;
 import net.minecraft.core.NonNullList;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.ItemStackTemplate;
 import net.minecraft.world.item.crafting.*;
 import org.jetbrains.annotations.NotNull;
 
 public class PhotographCopyingRecipe extends ComponentTransferringRecipe {
-    public PhotographCopyingRecipe(CraftingBookCategory category, Ingredient sourceIngredient, NonNullList<Ingredient> ingredients, ItemStack result) {
+    public PhotographCopyingRecipe(CraftingBookCategory category, Ingredient sourceIngredient,
+                                   NonNullList<Ingredient> ingredients, ItemStackTemplate result) {
         super(category, sourceIngredient, ingredients, result);
     }
 
     @Override
-    public @NotNull RecipeSerializer<?> getSerializer() {
+    public @NotNull RecipeSerializer<PhotographCopyingRecipe> getSerializer() {
         return Exposure.RecipeSerializers.PHOTOGRAPH_COPYING.get();
     }
 

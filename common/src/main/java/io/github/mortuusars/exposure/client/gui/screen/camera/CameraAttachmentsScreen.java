@@ -1,7 +1,6 @@
 package io.github.mortuusars.exposure.client.gui.screen.camera;
 
 import com.mojang.blaze3d.platform.InputConstants;
-import com.mojang.blaze3d.systems.RenderSystem;
 import io.github.mortuusars.exposure.Config;
 import io.github.mortuusars.exposure.Exposure;
 import io.github.mortuusars.exposure.client.gui.Widgets;
@@ -19,22 +18,23 @@ import io.github.mortuusars.exposure.data.Filters;
 import io.github.mortuusars.exposure.world.inventory.AbstractCameraAttachmentsMenu;
 import io.github.mortuusars.exposure.world.inventory.CameraInHandAttachmentsMenu;
 import net.minecraft.ChatFormatting;
-import net.minecraft.Util;
+import net.minecraft.util.Util;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.components.WidgetSprites;
 import net.minecraft.client.gui.screens.ConfirmLinkScreen;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.gui.screens.inventory.InventoryScreen;
-import net.minecraft.client.renderer.GameRenderer;
+import net.minecraft.client.input.KeyEvent;
+import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.renderer.Rect2i;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
@@ -47,7 +47,7 @@ import java.util.*;
 import java.util.function.Supplier;
 
 public class CameraAttachmentsScreen extends AbstractContainerScreen<AbstractCameraAttachmentsMenu> {
-    public static final ResourceLocation TEXTURE = Exposure.resource("textures/gui/camera_attachments.png");
+    public static final Identifier TEXTURE = Exposure.resource("textures/gui/camera_attachments.png");
 
     public static final WidgetSprites SKIN_REGULAR_BUTTON_SPRITES = Widgets.threeStateSprites(Exposure.resource("camera_attachments/regular"));
     public static final WidgetSprites SKIN_GOLD_BUTTON_SPRITES = Widgets.threeStateSprites(Exposure.resource("camera_attachments/gold"));
@@ -82,14 +82,14 @@ public class CameraAttachmentsScreen extends AbstractContainerScreen<AbstractCam
     protected boolean hasHoveredOverPart;
 
     public CameraAttachmentsScreen(AbstractCameraAttachmentsMenu menu, Inventory playerInventory, Component title) {
-        super(menu, playerInventory, title);
+        super(menu, playerInventory, title, 176, 185);
         this.player = playerInventory.player;
         showTutorialToasts();
     }
 
     protected void showTutorialToasts() {
         if (Config.Client.ATTACHMENTS_SHOW_INFO_TOAST.get()) {
-            Minecrft.get().getToasts().addToast(new BetterTutorialToast(ToastIcon.HOVER,
+            Minecrft.get().getToastManager().addToast(new BetterTutorialToast(ToastIcon.HOVER,
                     Component.translatable("gui.exposure.camera_attachments.mouse_over_toast.title"),
                     Component.translatable("gui.exposure.camera_attachments.mouse_over_toast.message"),
                     () -> {
@@ -105,7 +105,7 @@ public class CameraAttachmentsScreen extends AbstractContainerScreen<AbstractCam
             Config.Client.SPEC.save();
         }
         if (Config.Client.ATTACHMENTS_SHOW_WIKI_TOAST.get()) {
-            Minecrft.get().getToasts().addToast(new BetterTutorialToast(ToastIcon.F1,
+            Minecrft.get().getToastManager().addToast(new BetterTutorialToast(ToastIcon.F1,
                     Component.translatable("gui.exposure.camera_attachments.wiki_toast.title"),
                     Component.translatable("gui.exposure.camera_attachments.wiki_toast.message"),
                     BetterTutorialToast.DEFAULT_SHOW_DURATION_MS, () -> {
@@ -124,7 +124,6 @@ public class CameraAttachmentsScreen extends AbstractContainerScreen<AbstractCam
 
     @Override
     protected void init() {
-        this.imageHeight = 185;
         inventoryLabelY = this.imageHeight - 94;
         super.init();
 
@@ -145,30 +144,22 @@ public class CameraAttachmentsScreen extends AbstractContainerScreen<AbstractCam
     }
 
     @Override
-    public void render(@NotNull GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
-        super.render(guiGraphics, mouseX, mouseY, partialTick);
+    public void extractContents(@NotNull GuiGraphicsExtractor guiGraphics, int mouseX, int mouseY, float partialTick) {
+        renderBg(guiGraphics, partialTick, mouseX, mouseY);
+        super.extractContents(guiGraphics, mouseX, mouseY, partialTick);
 
         // Disabled slot overlay
         for (Slot slot : getMenu().slots) {
             if (!slot.mayPickup(player)) {
-                guiGraphics.renderItem(slot.getItem(), leftPos + slot.x, topPos + slot.y);
-                RenderSystem.enableBlend();
-                RenderSystem.defaultBlendFunc();
-                guiGraphics.blit(TEXTURE, leftPos + slot.x - 2, topPos + slot.y - 2, 350, 236, 92, 20, 20, 256, 256);
-                RenderSystem.disableBlend();
+                guiGraphics.item(slot.getItem(), leftPos + slot.x, topPos + slot.y);
+                guiGraphics.blit(net.minecraft.client.renderer.RenderPipelines.GUI_TEXTURED, TEXTURE, leftPos + slot.x - 2, topPos + slot.y - 2, 350, 236, 20, 20, 256, 256);
             }
         }
 
-        this.renderTooltip(guiGraphics, mouseX, mouseY);
     }
 
-    @Override
-    protected void renderBg(@NotNull GuiGraphics guiGraphics, float partialTick, int mouseX, int mouseY) {
-        RenderSystem.setShader(GameRenderer::getPositionTexShader);
-        RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
-        RenderSystem.enableBlend();
-        RenderSystem.defaultBlendFunc();
-        guiGraphics.blit(TEXTURE, this.leftPos, this.topPos, 0, 0, this.imageWidth, this.imageHeight);
+    protected void renderBg(@NotNull GuiGraphicsExtractor guiGraphics, float partialTick, int mouseX, int mouseY) {
+        guiGraphics.blit(net.minecraft.client.renderer.RenderPipelines.GUI_TEXTURED, TEXTURE, this.leftPos, this.topPos, 0, 0, this.imageWidth, this.imageHeight, 256, 256);
 
         renderSlotPlaceholders(guiGraphics, mouseX, mouseY, partialTick);
 
@@ -176,25 +167,24 @@ public class CameraAttachmentsScreen extends AbstractContainerScreen<AbstractCam
 
         for (Slot slot : getMenu().slots) {
             if (!slot.mayPickup(player)) {
-                guiGraphics.blit(TEXTURE, leftPos + slot.x - 2, topPos + slot.y - 2, 236, 72, 20, 20);
+                guiGraphics.blit(net.minecraft.client.renderer.RenderPipelines.GUI_TEXTURED, TEXTURE, leftPos + slot.x - 2, topPos + slot.y - 2, 236, 72, 20, 20, 256, 256);
             }
         }
 
-        RenderSystem.disableBlend();
     }
 
-    protected void renderAttachments(@NotNull GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
+    protected void renderAttachments(@NotNull GuiGraphicsExtractor guiGraphics, int mouseX, int mouseY, float partialTick) {
         if (getMenu().getSlot(1).hasItem()) {
             int vOffset = isMouseOver(flash, mouseX, mouseY) ? 28 : 0;
-            guiGraphics.blit(TEXTURE, leftPos + 96, topPos + 11, 176, vOffset, 28, 28);
+            guiGraphics.blit(net.minecraft.client.renderer.RenderPipelines.GUI_TEXTURED, TEXTURE, leftPos + 96, topPos + 11, 176, vOffset, 28, 28, 256, 256);
         }
 
         boolean hasLens = getMenu().getSlot(2).hasItem();
         if (hasLens) {
             int vOffset = isMouseOver(lens, mouseX, mouseY) && !isMouseOver(filterOnLens, mouseX, mouseY) ? 37 : 0;
-            guiGraphics.blit(TEXTURE, leftPos + 93, topPos + 47, 176, 56 + vOffset, 35, 37);
+            guiGraphics.blit(net.minecraft.client.renderer.RenderPipelines.GUI_TEXTURED, TEXTURE, leftPos + 93, topPos + 47, 176, 56 + vOffset, 35, 37, 256, 256);
         } else if (isMouseOver(lensBuiltIn, mouseX, mouseY) && !isMouseOver(filter, mouseX, mouseY)) {
-            guiGraphics.blit(TEXTURE, leftPos + 93, topPos + 47, 176, 130, 31, 35);
+            guiGraphics.blit(net.minecraft.client.renderer.RenderPipelines.GUI_TEXTURED, TEXTURE, leftPos + 93, topPos + 47, 176, 130, 31, 35, 256, 256);
         }
 
         Slot filterSlot = getMenu().getSlot(3);
@@ -205,25 +195,21 @@ public class CameraAttachmentsScreen extends AbstractContainerScreen<AbstractCam
                 renderFilter(guiGraphics, mouseX, mouseY, filter, filterX, filterY);
             });
         } else if (isMouseOver(filterOnLens, mouseX, mouseY)) {
-            RenderSystem.enableBlend();
-            RenderSystem.defaultBlendFunc();
-            guiGraphics.blit(TEXTURE, leftPos + 110, topPos + 58, 176, 165, 15, 23);
+            guiGraphics.blit(net.minecraft.client.renderer.RenderPipelines.GUI_TEXTURED, TEXTURE, leftPos + 110, topPos + 58, 176, 165, 15, 23, 256, 256);
         } else if (isMouseOver(filter, mouseX, mouseY)) {
-            RenderSystem.enableBlend();
-            RenderSystem.defaultBlendFunc();
-            guiGraphics.blit(TEXTURE, leftPos + 106, topPos + 56, 176, 165, 15, 23);
+            guiGraphics.blit(net.minecraft.client.renderer.RenderPipelines.GUI_TEXTURED, TEXTURE, leftPos + 106, topPos + 56, 176, 165, 15, 23, 256, 256);
         } else if (isMouseOver(viewfinder, mouseX, mouseY) && !isMouseOver(flash, mouseX, mouseY)) {
-            guiGraphics.blit(TEXTURE, leftPos + 65, topPos + 24, 42, 185, 49, 26);
+            guiGraphics.blit(net.minecraft.client.renderer.RenderPipelines.GUI_TEXTURED, TEXTURE, leftPos + 65, topPos + 24, 42, 185, 49, 26, 256, 256);
         } else if (isMouseOver(film, mouseX, mouseY)) {
-            guiGraphics.blit(TEXTURE, leftPos + 47, topPos + 20, 0, 185, 42, 52);
+            guiGraphics.blit(net.minecraft.client.renderer.RenderPipelines.GUI_TEXTURED, TEXTURE, leftPos + 47, topPos + 20, 0, 185, 42, 52, 256, 256);
         } else if (isMouseOver(shutterSpeedKnob, mouseX, mouseY)) {
-            guiGraphics.blit(TEXTURE, leftPos + 68, topPos + 49, 148, 185, 21, 26);
+            guiGraphics.blit(net.minecraft.client.renderer.RenderPipelines.GUI_TEXTURED, TEXTURE, leftPos + 68, topPos + 49, 148, 185, 21, 26, 256, 256);
         } else if (isMouseOver(selfTimer, mouseX, mouseY)) {
-            guiGraphics.blit(TEXTURE, leftPos + 93, topPos + 78, 169, 185, 4, 5);
+            guiGraphics.blit(net.minecraft.client.renderer.RenderPipelines.GUI_TEXTURED, TEXTURE, leftPos + 93, topPos + 78, 169, 185, 4, 5, 256, 256);
         }
     }
 
-    protected void renderFilter(@NotNull GuiGraphics guiGraphics, int mouseX, int mouseY, Filter filter, int filterX, int filterY) {
+    protected void renderFilter(@NotNull GuiGraphicsExtractor guiGraphics, int mouseX, int mouseY, Filter filter, int filterX, int filterY) {
         Color tint = filter.attachmentTintColor();
         float r = tint.getRF();
         float g = tint.getGF();
@@ -235,13 +221,11 @@ public class CameraAttachmentsScreen extends AbstractContainerScreen<AbstractCam
             b *= 1.35f;
         }
 
-        RenderSystem.setShaderColor(r, g, b, 1.0F);
-        RenderSystem.enableBlend();
-        RenderSystem.defaultBlendFunc();
-
-        ResourceLocation filterTexture = filter.attachmentTexture();
-        guiGraphics.blit(filterTexture, leftPos + filterX, topPos + filterY, 0, 0, 32, 32, 32, 32);
-        RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
+        Identifier filterTexture = filter.attachmentTexture();
+        int tintColor = Color.argbF(1.0F, net.minecraft.util.Mth.clamp(r, 0.0F, 1.0F),
+                net.minecraft.util.Mth.clamp(g, 0.0F, 1.0F), net.minecraft.util.Mth.clamp(b, 0.0F, 1.0F)).getARGB();
+        guiGraphics.blit(net.minecraft.client.renderer.RenderPipelines.GUI_TEXTURED, filterTexture,
+                leftPos + filterX, topPos + filterY, 0, 0, 32, 32, 32, 32, tintColor);
     }
 
     protected boolean isMouseOver(HoveredElement element, int mouseX, int mouseY) {
@@ -262,23 +246,23 @@ public class CameraAttachmentsScreen extends AbstractContainerScreen<AbstractCam
         return false;
     }
 
-    protected void renderSlotPlaceholders(@NotNull GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
+    protected void renderSlotPlaceholders(@NotNull GuiGraphicsExtractor guiGraphics, int mouseX, int mouseY, float partialTick) {
         for (int slotIndex : slotPlaceholders.keySet()) {
             Slot slot = getMenu().getSlot(slotIndex);
             if (!slot.hasItem()) {
                 Rect2i placeholder = slotPlaceholders.get(slotIndex);
-                guiGraphics.blit(TEXTURE, leftPos + slot.x - 1, topPos + slot.y - 1,
-                        placeholder.getX(), placeholder.getY(), placeholder.getWidth(), placeholder.getHeight());
+                guiGraphics.blit(net.minecraft.client.renderer.RenderPipelines.GUI_TEXTURED, TEXTURE, leftPos + slot.x - 1, topPos + slot.y - 1,
+                        placeholder.getX(), placeholder.getY(), placeholder.getWidth(), placeholder.getHeight(), 256, 256);
             }
         }
     }
 
     @Override
-    protected void renderTooltip(GuiGraphics guiGraphics, int x, int y) {
+    protected void extractTooltip(GuiGraphicsExtractor guiGraphics, int x, int y) {
         boolean hoveredOverPart = true; // easier to set it to false in else block, than in every if block.
 
         if (isMouseOver(flash, x, y)) {
-            guiGraphics.renderTooltip(font, getTooltipLines(translate("flash.tooltip")), x, y);
+            guiGraphics.setTooltipForNextFrame(font, getTooltipLines(translate("flash.tooltip")), x, y);
         } else if (isMouseOver(viewfinder, x, y)) {
             Component controlsKey = translateKey(KeyboardHandler.getCameraControlsKey(), ChatFormatting.GRAY);
             Component middleClick = Config.Client.VIEWFINDER_MIDDLE_CLICK_CONTROLS.get()
@@ -286,25 +270,25 @@ public class CameraAttachmentsScreen extends AbstractContainerScreen<AbstractCam
                     : Component.empty();
             Component selfieKey = translateKey(Minecrft.options().keyTogglePerspective, ChatFormatting.GRAY);
             Component sprintKey = translateKey(Minecrft.options().keySprint, ChatFormatting.GRAY);
-            guiGraphics.renderTooltip(font, getTooltipLines(
+            guiGraphics.setTooltipForNextFrame(font, getTooltipLines(
                     translate("viewfinder.tooltip", controlsKey, middleClick, selfieKey, sprintKey)), x, y);
         } else if (isMouseOver(shutterSpeedKnob, x, y)) {
-            guiGraphics.renderTooltip(font, getTooltipLines(translate("shutter_speed.tooltip")), x, y);
+            guiGraphics.setTooltipForNextFrame(font, getTooltipLines(translate("shutter_speed.tooltip")), x, y);
         } else if (isMouseOver(filter, x, y) || isMouseOver(filterOnLens, x, y)) {
-            guiGraphics.renderTooltip(font, getTooltipLines(translate("filter.tooltip")), x, y);
+            guiGraphics.setTooltipForNextFrame(font, getTooltipLines(translate("filter.tooltip")), x, y);
         } else if (isMouseOver(lens, x, y) || isMouseOver(lensBuiltIn, x, y)) {
-            guiGraphics.renderTooltip(font, getTooltipLines(translate("lens.tooltip")), x, y);
+            guiGraphics.setTooltipForNextFrame(font, getTooltipLines(translate("lens.tooltip")), x, y);
         } else if (isMouseOver(film, x, y)) {
-            guiGraphics.renderTooltip(font, getTooltipLines(translate("film.tooltip")), x, y);
+            guiGraphics.setTooltipForNextFrame(font, getTooltipLines(translate("film.tooltip")), x, y);
         } else if (isMouseOver(selfTimer, x, y)) {
             MutableComponent tooltip = translate("self_timer.tooltip");
             if (Config.Server.TIMER_ATTRACTS_MOB_ATTENTION.get()) {
                 tooltip.append(translate("self_timer_attention.tooltip"));
             }
-            guiGraphics.renderTooltip(font, getTooltipLines(tooltip), x, y);
+            guiGraphics.setTooltipForNextFrame(font, getTooltipLines(tooltip), x, y);
         } else {
             hoveredOverPart = false;
-            super.renderTooltip(guiGraphics, x, y);
+            super.extractTooltip(guiGraphics, x, y);
         }
 
         if (!hasHoveredOverPart && hoveredOverPart && System.currentTimeMillis() - openedAt > 3000) {
@@ -329,8 +313,8 @@ public class CameraAttachmentsScreen extends AbstractContainerScreen<AbstractCam
     }
 
     @Override
-    public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
-        if (keyCode == InputConstants.KEY_F1) {
+    public boolean keyPressed(KeyEvent event) {
+        if (event.key() == InputConstants.KEY_F1) {
             String url = "https://moddedmc.wiki/project/exposure";
             Minecrft.get().setScreen(new ConfirmLinkScreen(confirmed -> {
                 if (confirmed) {
@@ -342,13 +326,13 @@ public class CameraAttachmentsScreen extends AbstractContainerScreen<AbstractCam
             return true;
         }
 
-        return super.keyPressed(keyCode, scanCode, modifiers);
+        return super.keyPressed(event);
     }
 
     @Override
-    public boolean mouseClicked(double mouseX, double mouseY, int button) {
-        int x = (int) mouseX;
-        int y = (int) mouseY;
+    public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
+        int x = (int) event.x();
+        int y = (int) event.y();
 
         if (isMouseOver(filter, x, y) || isMouseOver(filterOnLens, x, y)) {
             List<ItemStack> itemStacks = new ArrayList<>();
@@ -380,7 +364,7 @@ public class CameraAttachmentsScreen extends AbstractContainerScreen<AbstractCam
             return true;
         }
 
-        return super.mouseClicked(mouseX, mouseY, button);
+        return super.mouseClicked(event, doubleClick);
     }
 
     @Override

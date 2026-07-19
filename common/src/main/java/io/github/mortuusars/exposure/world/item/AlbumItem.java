@@ -14,7 +14,6 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.stats.Stats;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
-import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
@@ -56,16 +55,16 @@ public class AlbumItem extends Item {
     }
 
     @Override
-    public @NotNull InteractionResultHolder<ItemStack> use(Level level, Player player, InteractionHand usedHand) {
+    public @NotNull InteractionResult use(Level level, Player player, InteractionHand usedHand) {
         ItemStack itemStack = player.getItemInHand(usedHand);
 
         if (player instanceof ServerPlayer serverPlayer) {
-            int albumSlot = usedHand == InteractionHand.OFF_HAND ? Inventory.SLOT_OFFHAND : player.getInventory().selected;
+        int albumSlot = usedHand == InteractionHand.OFF_HAND ? Inventory.SLOT_OFFHAND : player.getInventory().getSelectedSlot();
             open(serverPlayer, itemStack, albumSlot);
         }
 
         player.awardStat(Stats.ITEM_USED.get(this));
-        return InteractionResultHolder.sidedSuccess(itemStack, level.isClientSide());
+        return level.isClientSide() ? InteractionResult.SUCCESS : InteractionResult.SUCCESS_SERVER;
     }
 
     @Override
@@ -75,7 +74,9 @@ public class AlbumItem extends Item {
         BlockState blockState = level.getBlockState(blockPos);
         if (blockState.is(Blocks.LECTERN))
             return LecternBlock.tryPlaceBook(context.getPlayer(), level, blockPos, blockState,
-                    context.getItemInHand()) ? InteractionResult.sidedSuccess(level.isClientSide) : InteractionResult.PASS;
+                context.getItemInHand())
+                ? (level.isClientSide() ? InteractionResult.SUCCESS : InteractionResult.SUCCESS_SERVER)
+                : InteractionResult.PASS;
         return InteractionResult.PASS;
     }
 
@@ -98,11 +99,13 @@ public class AlbumItem extends Item {
     }
 
     @Override
-    public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltipComponents, TooltipFlag tooltipFlag) {
+    public void appendHoverText(ItemStack stack, TooltipContext context,
+                                net.minecraft.world.item.component.TooltipDisplay tooltipDisplay,
+                                java.util.function.Consumer<Component> tooltipConsumer, TooltipFlag tooltipFlag) {
         if (Config.Client.ALBUM_PHOTOS_COUNT_TOOLTIP.get()) {
             int photographsCount = getPhotographsCount(stack);
             if (photographsCount > 0)
-                tooltipComponents.add(Component.translatable("item.exposure.album.tooltip.photos_count", photographsCount));
+                tooltipConsumer.accept(Component.translatable("item.exposure.album.tooltip.photos_count", photographsCount));
         }
     }
 

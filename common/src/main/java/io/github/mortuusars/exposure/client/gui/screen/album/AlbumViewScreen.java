@@ -1,7 +1,6 @@
 package io.github.mortuusars.exposure.client.gui.screen.album;
 
 import com.mojang.blaze3d.platform.InputConstants;
-import com.mojang.blaze3d.systems.RenderSystem;
 import io.github.mortuusars.exposure.Config;
 import io.github.mortuusars.exposure.Exposure;
 import io.github.mortuusars.exposure.client.gui.screen.element.Pager;
@@ -20,10 +19,11 @@ import io.github.mortuusars.exposure.world.item.component.album.SignedAlbumPage;
 import io.github.mortuusars.exposure.world.item.util.ItemAndStack;
 import io.github.mortuusars.exposure.world.sound.SoundEffect;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.*;
+import net.minecraft.client.input.KeyEvent;
+import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Component;
@@ -156,21 +156,21 @@ public class AlbumViewScreen extends Screen {
     }
 
     @Override
-    public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
-        super.render(guiGraphics, mouseX, mouseY, partialTick);
-        renderTooltip(guiGraphics, mouseX, mouseY);
+    public void extractRenderState(GuiGraphicsExtractor guiGraphics, int mouseX, int mouseY, float partialTick) {
+        super.extractRenderState(guiGraphics, mouseX, mouseY, partialTick);
+        extractTooltip(guiGraphics, mouseX, mouseY);
 
         for (Page page : pages) {
             AbstractWidget noteWidget = page.noteWidget();
             if (noteWidget instanceof TextBlock textBlock) {
-                textBlock.render(guiGraphics, mouseX, mouseY, partialTick);
+                textBlock.extractRenderState(guiGraphics, mouseX, mouseY, partialTick);
             }
         }
 
-        this.renderTooltip(guiGraphics, mouseX, mouseY);
+        this.extractTooltip(guiGraphics, mouseX, mouseY);
     }
 
-    protected void renderTooltip(GuiGraphics guiGraphics, int x, int y) {
+    protected void extractTooltip(GuiGraphicsExtractor guiGraphics, int x, int y) {
         for (Page page : pages) {
             if (page.photographWidget().isHoveredOrFocused()) {
                 page.photographWidget().renderTooltip(guiGraphics, x, y);
@@ -180,41 +180,37 @@ public class AlbumViewScreen extends Screen {
     }
 
     @Override
-    public void renderBackground(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
-        renderTransparentBackground(guiGraphics);
+    public void extractBackground(GuiGraphicsExtractor guiGraphics, int mouseX, int mouseY, float partialTick) {
+        extractTransparentBackground(guiGraphics);
 
-        RenderSystem.setShader(GameRenderer::getPositionTexShader);
-        RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
-        RenderSystem.enableBlend();
-        RenderSystem.defaultBlendFunc();
-        guiGraphics.blit(AlbumGUI.TEXTURE, leftPos, topPos, 0, 0, 0,
+        guiGraphics.blit(net.minecraft.client.renderer.RenderPipelines.GUI_TEXTURED, AlbumGUI.TEXTURE, leftPos, topPos, 0, 0,
                 imageWidth, imageHeight, 512, 512);
 
         int currentSpreadIndex = getCurrentSpreadIndex();
         drawPageNumbers(guiGraphics, currentSpreadIndex, mouseX, mouseY);
     }
 
-    protected void drawPageNumbers(GuiGraphics guiGraphics, int currentSpreadIndex, int mouseX, int mouseY) {
+    protected void drawPageNumbers(GuiGraphicsExtractor guiGraphics, int currentSpreadIndex, int mouseX, int mouseY) {
         Font font = Minecrft.get().font;
 
         String leftPageNumber = Integer.toString(currentSpreadIndex * 2 + 1);
         String rightPageNumber = Integer.toString(currentSpreadIndex * 2 + 2);
 
-        guiGraphics.drawString(font, leftPageNumber, leftPos + 71 + (8 - font.width(leftPageNumber) / 2),
+        guiGraphics.text(font, leftPageNumber, leftPos + 71 + (8 - font.width(leftPageNumber) / 2),
                 topPos + 167, Config.getColor(Config.Client.ALBUM_FONT_SECONDARY_COLOR), false);
 
-        guiGraphics.drawString(font, rightPageNumber, leftPos + 212 + (8 - font.width(rightPageNumber) / 2),
+        guiGraphics.text(font, rightPageNumber, leftPos + 212 + (8 - font.width(rightPageNumber) / 2),
                 topPos + 167, Config.getColor(Config.Client.ALBUM_FONT_SECONDARY_COLOR), false);
     }
 
     // --
 
     @Override
-    public boolean mouseClicked(double mouseX, double mouseY, int button) {
-        if (super.mouseClicked(mouseX, mouseY, button)) return true;
+    public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
+        if (super.mouseClicked(event, doubleClick)) return true;
 
         for (Page page : pages) {
-            if (page.noteWidget().mouseClicked(mouseX, mouseY, button)) {
+            if (page.noteWidget().mouseClicked(event, doubleClick)) {
                 return true;
             }
         }
@@ -222,7 +218,6 @@ public class AlbumViewScreen extends Screen {
         return false;
     }
 
-    @Override
     public boolean handleComponentClicked(@Nullable Style style) {
         if (style == null)
             return false;
@@ -230,17 +225,15 @@ public class AlbumViewScreen extends Screen {
         ClickEvent clickEvent = style.getClickEvent();
         if (clickEvent == null)
             return false;
-        else if (clickEvent.getAction() == ClickEvent.Action.CHANGE_PAGE) {
-            String pageIndexStr = clickEvent.getValue();
-            int pageIndex = Integer.parseInt(pageIndexStr) - 1;
-            forcePage(pageIndex);
+        else if (clickEvent instanceof ClickEvent.ChangePage changePage) {
+            forcePage(changePage.page() - 1);
             return true;
         }
 
-        boolean handled = super.handleComponentClicked(style);
-        if (handled && clickEvent.getAction() == ClickEvent.Action.RUN_COMMAND)
+        Screen.defaultHandleClickEvent(clickEvent, minecraft, this);
+        if (clickEvent instanceof ClickEvent.RunCommand)
             onClose();
-        return handled;
+        return true;
     }
 
     protected void forcePage(int pageIndex) {
@@ -248,13 +241,13 @@ public class AlbumViewScreen extends Screen {
     }
 
     @Override
-    public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
-        return keyBindings.keyPressed(keyCode, scanCode, modifiers) || super.keyPressed(keyCode, scanCode, modifiers);
+    public boolean keyPressed(KeyEvent event) {
+        return keyBindings.keyPressed(event) || super.keyPressed(event);
     }
 
     @Override
-    public boolean keyReleased(int keyCode, int scanCode, int modifiers) {
-        return keyBindings.keyReleased(keyCode, scanCode, modifiers) || super.keyReleased(keyCode, scanCode, modifiers);
+    public boolean keyReleased(KeyEvent event) {
+        return keyBindings.keyReleased(event) || super.keyReleased(event);
     }
 
     // --

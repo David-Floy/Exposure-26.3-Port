@@ -100,7 +100,7 @@ public class DebugCommand {
             double fov = cameraItem.getViewfinderFov(player.level(), cameraStack);
             List<BlockPos> positions = cameraItem.getPositionsInFrame(player, pov, fov);
             List<LivingEntity> entities = EntitiesInFrame.get((CameraHolder) player, pov, fov);
-            Frame frame = cameraItem.createFrame(player, player.serverLevel(), cameraStack, params, positions, entities);
+            Frame frame = cameraItem.createFrame(player, player.level(), cameraStack, params, positions, entities);
 
             Supplier<Component> msg = () -> {
                 ItemStack photograph = new ItemStack(Exposure.Items.PHOTOGRAPH.get());
@@ -108,9 +108,9 @@ public class DebugCommand {
                 return Component.translatable("command.exposure.debug.expose_rgb.success.captured", channel.getSerializedName())
                         .append(Component.literal(exposureId)
                                 .withStyle(Style.EMPTY
-                                        .withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND,
-                                                "/exposure show id " + exposureId))
-                                        .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_ITEM, new HoverEvent.ItemStackInfo(photograph)))
+                                                .withClickEvent(new ClickEvent.RunCommand(
+                                                        "/exposure show id " + exposureId))
+                                                .withHoverEvent(new HoverEvent.ShowItem(net.minecraft.world.item.ItemStackTemplate.fromNonEmptyStack(photograph)))
                                         .withUnderlined(true)));
             };
 
@@ -159,9 +159,9 @@ public class DebugCommand {
                 return Component.translatable("command.exposure.debug.chromatic_from_last_three.success.created")
                         .append(Component.literal(exposureId)
                                 .withStyle(Style.EMPTY
-                                        .withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND,
-                                                "/exposure show latest"))
-                                        .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_ITEM, new HoverEvent.ItemStackInfo(photographStack)))
+                                                .withClickEvent(new ClickEvent.RunCommand(
+                                                        "/exposure show latest"))
+                                                .withHoverEvent(new HoverEvent.ShowItem(net.minecraft.world.item.ItemStackTemplate.fromNonEmptyStack(photographStack)))
                                         .withUnderlined(true)));
             };
 

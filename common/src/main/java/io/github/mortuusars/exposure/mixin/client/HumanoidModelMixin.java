@@ -1,23 +1,14 @@
 package io.github.mortuusars.exposure.mixin.client;
 
-import io.github.mortuusars.exposure.PlatformHelper;
 import io.github.mortuusars.exposure.client.animation.CameraModelPoses;
+import io.github.mortuusars.exposure.client.animation.CameraPoseRenderState;
 import io.github.mortuusars.exposure.client.animation.CameraPoses;
-import io.github.mortuusars.exposure.client.util.Minecrft;
-import io.github.mortuusars.exposure.world.camera.Camera;
-import io.github.mortuusars.exposure.world.camera.CameraInHand;
-import io.github.mortuusars.exposure.world.camera.CameraOnStand;
-import io.github.mortuusars.exposure.world.entity.CameraHolder;
-import io.github.mortuusars.exposure.world.entity.CameraOperator;
-import io.github.mortuusars.exposure.world.item.camera.CameraItem;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.model.AgeableListModel;
+import io.github.mortuusars.exposure.client.animation.ExposureHumanoidRenderState;
 import net.minecraft.client.model.AnimationUtils;
 import net.minecraft.client.model.HumanoidModel;
 import net.minecraft.client.model.geom.ModelPart;
-import net.minecraft.world.InteractionHand;
-import net.minecraft.world.entity.HumanoidArm;
-import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.client.renderer.entity.state.HumanoidRenderState;
+import org.objectweb.asm.Opcodes;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -28,90 +19,59 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(HumanoidModel.class)
-public abstract class HumanoidModelMixin<T extends LivingEntity> extends AgeableListModel<T> {
-    @Shadow
-    @Final
-    public ModelPart leftArm;
-    @Shadow
-    @Final
-    public ModelPart rightArm;
+public abstract class HumanoidModelMixin {
+    @Shadow @Final public ModelPart leftArm;
+    @Shadow @Final public ModelPart rightArm;
 
-    // Allows reducing/removing arm bobbing. Doing the bobbing in reverse does not work correctly - arms shiver for some reason.
-    @Unique
-    private float exposure$LeftArmBobbingMultiplier = 1F;
-    @Unique
-    private float exposure$RightArmBobbingMultiplier = 1F;
+    // Applying reduced bobbing directly avoids the arm jitter produced by undoing it afterwards.
+    @Unique private float exposure$leftArmBobbingMultiplier = 1F;
+    @Unique private float exposure$rightArmBobbingMultiplier = 1F;
 
-    @Inject(method = "setupAnim(Lnet/minecraft/world/entity/LivingEntity;FFFFF)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/model/AnimationUtils;bobModelPart(Lnet/minecraft/client/model/geom/ModelPart;FF)V", ordinal = 0))
-    void onSetupAnim(T entity, float limbSwing, float limbSwingAmount, float ageInTicks, float netHeadYaw, float headPitch, CallbackInfo ci) {
-        if (!(entity instanceof CameraOperator operator)) {
-            exposure$LeftArmBobbingMultiplier = 1F;
-            exposure$RightArmBobbingMultiplier = 1F;
-            return;
-        }
+    @Inject(method = "setupAnim(Lnet/minecraft/client/renderer/entity/state/HumanoidRenderState;)V",
+            at = @At(value = "FIELD",
+                    target = "Lnet/minecraft/client/model/HumanoidModel$ArmPose;SPYGLASS:Lnet/minecraft/client/model/HumanoidModel$ArmPose;",
+                    opcode = Opcodes.GETSTATIC, ordinal = 0))
+    private void exposure$applyCameraPose(HumanoidRenderState state, CallbackInfo ci) {
+        exposure$leftArmBobbingMultiplier = 1F;
+        exposure$rightArmBobbingMultiplier = 1F;
 
-        if (operator.getActiveExposureCamera() instanceof Camera camera && camera.getItemStack().getItem() instanceof CameraItem item) {
-            CameraPoses poses = CameraModelPoses.get(item);
-            HumanoidArm arm = camera instanceof CameraInHand cameraInHand && cameraInHand.getHand() == InteractionHand.OFF_HAND
-                    ? Minecraft.getInstance().options.mainHand().get().getOpposite()
-                    : Minecraft.getInstance().options.mainHand().get();
+        CameraPoseRenderState cameraPose = ((ExposureHumanoidRenderState) state).exposure$getCameraPose();
+        if (cameraPose.pose() == CameraPoseRenderState.Pose.NONE || cameraPose.cameraItemId() == null) return;
 
-            if (camera instanceof CameraOnStand cameraOnStand) {
-                poses.applyStand((HumanoidModel<?>) (Object) this, entity, arm, cameraOnStand.getStand());
-                exposure$LeftArmBobbingMultiplier = 1F;
-                exposure$RightArmBobbingMultiplier = 1F;
-                return;
+        CameraPoses poses = CameraModelPoses.get(cameraPose.cameraItemId());
+        HumanoidModel<?> model = (HumanoidModel<?>) (Object) this;
+        switch (cameraPose.pose()) {
+            case HOLDING -> {
+                poses.applyHolding(model, cameraPose.arm(), cameraPose.actionAnim());
+                exposure$leftArmBobbingMultiplier = cameraPose.arm() == net.minecraft.world.entity.HumanoidArm.LEFT ? 0.1F : 0.5F;
+                exposure$rightArmBobbingMultiplier = cameraPose.arm() == net.minecraft.world.entity.HumanoidArm.RIGHT ? 0.1F : 0.5F;
             }
-
-            if (item.isInSelfieMode(camera.getItemStack())) {
-                poses.applySelfie((HumanoidModel<?>) (Object) this, entity, arm, false);
-
-                if (arm == HumanoidArm.LEFT) {
-                    exposure$LeftArmBobbingMultiplier = 0F;
-                    exposure$RightArmBobbingMultiplier = 1F;
+            case SELFIE -> {
+                poses.applySelfie(model, cameraPose.arm(), cameraPose.cameraEntity());
+                if (cameraPose.arm() == net.minecraft.world.entity.HumanoidArm.LEFT) {
+                    exposure$leftArmBobbingMultiplier = 0F;
                 } else {
-                    exposure$LeftArmBobbingMultiplier = 1F;
-                    exposure$RightArmBobbingMultiplier = 0F;
+                    exposure$rightArmBobbingMultiplier = 0F;
                 }
-
-                return;
             }
-
-            //noinspection ConstantValue
-            if (Minecrft.player().equals(entity) && PlatformHelper.isModLoaded("realcamera")) {
-                return;
-            }
-
-            poses.applyHolding(((HumanoidModel<?>) (Object) this), entity, arm);
-            exposure$LeftArmBobbingMultiplier = arm == HumanoidArm.LEFT ? 0.1F : 0.5F;
-            exposure$RightArmBobbingMultiplier = arm == HumanoidArm.RIGHT ? 0.1F : 0.5F;
-            return;
+            case DISASSEMBLED -> poses.applyDisassembled(model, cameraPose.arm(), cameraPose.actionAnim());
+            case STAND -> poses.applyStand(model, cameraPose.arm(), cameraPose.standHeadXRot(),
+                    cameraPose.standHeadYRot(), cameraPose.actionAnim());
+            case NONE -> { }
         }
-
-        if (entity instanceof CameraHolder holder && CameraInHand.find(holder) instanceof CameraInHand camera) {
-            camera.ifPresent((item, stack) -> {
-                CameraPoses poses = CameraModelPoses.get(item);
-                if (item.isDisassembled(stack)) {
-                    HumanoidArm arm = camera.getHand() == InteractionHand.OFF_HAND
-                            ? Minecraft.getInstance().options.mainHand().get().getOpposite()
-                            : Minecraft.getInstance().options.mainHand().get();
-                    poses.applyDisassembled((HumanoidModel<?>) (Object) this, entity, arm);
-                }
-            });
-        }
-        exposure$LeftArmBobbingMultiplier = 1F;
-        exposure$RightArmBobbingMultiplier = 1F;
     }
 
-    @Redirect(method = "setupAnim(Lnet/minecraft/world/entity/LivingEntity;FFFFF)V",
-            at = @At(value = "INVOKE", target = "Lnet/minecraft/client/model/AnimationUtils;bobModelPart(Lnet/minecraft/client/model/geom/ModelPart;FF)V"))
-    private void removeBobbing(ModelPart modelPart, float ageInTicks, float multiplier) {
-        if (exposure$LeftArmBobbingMultiplier != 1F && modelPart == leftArm) {
-            multiplier = exposure$LeftArmBobbingMultiplier * -1;
+    @Redirect(method = "setupAnim(Lnet/minecraft/client/renderer/entity/state/HumanoidRenderState;)V",
+            at = @At(value = "INVOKE",
+                    target = "Lnet/minecraft/client/model/AnimationUtils;bobModelPart(Lnet/minecraft/client/model/geom/ModelPart;FF)V"))
+    private void exposure$adjustArmBobbing(ModelPart modelPart, float ageInTicks, float multiplier) {
+        if (exposure$leftArmBobbingMultiplier != 1F && modelPart == leftArm) {
+            multiplier = exposure$leftArmBobbingMultiplier * -1;
         }
-        if (exposure$RightArmBobbingMultiplier != 1F && modelPart == rightArm) {
-            multiplier = exposure$RightArmBobbingMultiplier;
+        if (exposure$rightArmBobbingMultiplier != 1F && modelPart == rightArm) {
+            multiplier = exposure$rightArmBobbingMultiplier;
         }
         AnimationUtils.bobModelPart(modelPart, ageInTicks, multiplier);
     }
+
 }

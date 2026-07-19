@@ -1,51 +1,32 @@
-#version 150
+#version 330
 
 uniform sampler2D DiffuseSampler;
 
 in vec2 texCoord;
-in vec2 oneTexel;
 
-uniform vec3 Mul;
-uniform vec3 Add;
-uniform float Saturation;
-uniform float Contrast;
+layout(std140) uniform ColorConfig {
+    vec3 Mul;
+    float _PaddingAfterMul;
+    vec3 Add;
+    float _PaddingAfterAdd;
+    float Saturation;
+    float Contrast;
+};
 
 out vec4 fragColor;
 
-// This shader is a duplicate of minecraft:color_convolve but with Contrast and without InSize to stop the warnings about not finding uniform InSize.
+// Duplicate of the legacy color-convolve pass with Exposure's contrast control.
 void main() {
-    vec4 InTexel = texture(DiffuseSampler, texCoord);
+    vec4 inTexel = texture(DiffuseSampler, texCoord);
 
-    vec3 RGB = InTexel.rgb * Mul + Add;
+    vec3 rgb = inTexel.rgb * Mul + Add;
 
-    //Saturation
-    vec3 Gray = vec3(0.3, 0.59, 0.11);
-    float Luma = dot(RGB, Gray);
-    vec3 Chroma = RGB - Luma;
-    RGB = (Chroma * Saturation) + Luma;
+    vec3 gray = vec3(0.3, 0.59, 0.11);
+    float luma = dot(rgb, gray);
+    vec3 chroma = rgb - luma;
+    rgb = (chroma * Saturation) + luma;
 
-    // Contrast
-    RGB = (RGB - 0.5) * Contrast + 0.5;
+    rgb = (rgb - 0.5) * Contrast + 0.5;
 
-    fragColor = vec4(RGB, 1.0);
-
-
-//    // Color Matrix
-//    float RedValue = dot(InTexel.rgb, RedMatrix);
-//    float GreenValue = dot(InTexel.rgb, GreenMatrix);
-//    float BlueValue = dot(InTexel.rgb, BlueMatrix);
-//    vec3 OutColor = vec3(RedValue, GreenValue, BlueValue);
-//
-//    // Offset & Scale
-//    OutColor = (OutColor * ColorScale) + Offset;
-//
-//    // Saturation
-//    float Luma = dot(OutColor, Gray);
-//    vec3 Chroma = OutColor - Luma;
-//    OutColor = (Chroma * Saturation) + Luma;
-//
-//    // Contrast
-//    OutColor = (OutColor - 0.5) * Contrast + 0.5;
-//
-//    fragColor = vec4(OutColor, 1.0);
+    fragColor = vec4(rgb, 1.0);
 }

@@ -6,7 +6,7 @@ import io.github.mortuusars.exposure.world.item.camera.Attachment;
 import io.github.mortuusars.exposure.world.item.FilmRollItem;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.ImageButton;
 import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.components.WidgetSprites;
@@ -28,7 +28,7 @@ public class FrameCounterButton extends ImageButton {
     }
 
     @Override
-    public void renderWidget(@NotNull GuiGraphics guiGraphics, int mouseX, int mouseY, float pPartialTick) {
+    public void extractContents(@NotNull GuiGraphicsExtractor guiGraphics, int mouseX, int mouseY, float pPartialTick) {
         MutableComponent tooltipComponent = Component.translatable("gui.exposure.camera_controls.film_frame_counter.tooltip");
         if (!cameraHasFilmRoll()) {
             tooltipComponent.append(CommonComponents.NEW_LINE)
@@ -37,7 +37,7 @@ public class FrameCounterButton extends ImageButton {
         }
         setTooltip(Tooltip.create(tooltipComponent));
 
-        super.renderWidget(guiGraphics, mouseX, mouseY, pPartialTick);
+        super.extractContents(guiGraphics, mouseX, mouseY, pPartialTick);
 
         String text = createText();
 
@@ -45,8 +45,8 @@ public class FrameCounterButton extends ImageButton {
         int textWidth = font.width(text);
         int xPos = 15 + (27 - textWidth) / 2;
 
-        guiGraphics.drawString(font, text, getX() + xPos, getY() + 8, secondaryFontColor, false);
-        guiGraphics.drawString(font, text, getX() + xPos, getY() + 7, mainFontColor, false);
+        guiGraphics.text(font, text, getX() + xPos, getY() + 8, secondaryFontColor, false);
+        guiGraphics.text(font, text, getX() + xPos, getY() + 7, mainFontColor, false);
     }
 
     protected String createText() {

@@ -4,7 +4,14 @@ import io.github.mortuusars.exposure.util.Fov;
 import io.github.mortuusars.exposure.util.PointOfView;
 import io.github.mortuusars.exposure.world.entity.CameraHolder;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.animal.happyghast.HappyGhast;
+import net.minecraft.world.entity.animal.sniffer.Sniffer;
+import net.minecraft.world.entity.boss.enderdragon.EnderDragon;
+import net.minecraft.world.entity.boss.enderdragon.EnderDragonPart;
+import net.minecraft.world.entity.monster.illager.Illusioner;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.HitResult;
@@ -55,7 +62,7 @@ public class EntitiesInFrame {
     public static double calculateVisibleDistance(Vec3 cameraPos, Entity entity) {
         double distanceInBlocks = Math.sqrt(entity.distanceToSqr(cameraPos));
 
-        AABB boundingBox = entity.getBoundingBoxForCulling();
+        AABB boundingBox = getVisualBoundingBox(entity);
         double size = boundingBox.getSize();
         if (Double.isNaN(size) || size == 0.0)
             size = 0.1;
@@ -64,6 +71,35 @@ public class EntitiesInFrame {
         // Makes distance longer, so entity would need to be closer to be "in frame". Very sophisticated math right here.
         double feelsRightInfluence = 1.15;
         return (distanceInBlocks / sizeInfluence) * feelsRightInfluence;
+    }
+
+    /**
+     * Server-safe equivalent of the 26.1.2 living-entity renderer culling box. The culling box
+     * moved from Entity to EntityRenderer, which is unavailable on a dedicated server where
+     * entities-in-frame are recorded. Keep the vanilla living renderer's known visual expansions
+     * here, and include dragon parts so multipart scale is not reduced to the body hitbox.
+     */
+    static AABB getVisualBoundingBox(Entity entity) {
+        AABB boundingBox = entity.getBoundingBox();
+
+        if (entity instanceof LivingEntity livingEntity
+                && livingEntity.getItemBySlot(EquipmentSlot.HEAD).is(Items.DRAGON_HEAD)) {
+            boundingBox = boundingBox.inflate(0.5);
+        }
+
+        if (entity instanceof HappyGhast happyGhast) {
+            boundingBox = boundingBox.setMinY(boundingBox.minY - happyGhast.getBbHeight() / 2.0);
+        } else if (entity instanceof Illusioner) {
+            boundingBox = boundingBox.inflate(3.0, 0.0, 3.0);
+        } else if (entity instanceof Sniffer) {
+            boundingBox = boundingBox.inflate(0.6F);
+        } else if (entity instanceof EnderDragon dragon) {
+            for (EnderDragonPart part : dragon.getSubEntities()) {
+                boundingBox = boundingBox.minmax(part.getBoundingBox());
+            }
+        }
+
+        return boundingBox;
     }
 
     /**

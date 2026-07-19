@@ -1,7 +1,6 @@
 package io.github.mortuusars.exposure.client.gui.screen.test;
 
 import com.mojang.blaze3d.platform.InputConstants;
-import com.mojang.blaze3d.vertex.VertexConsumer;
 import io.github.mortuusars.exposure.Exposure;
 import io.github.mortuusars.exposure.ExposureClient;
 import io.github.mortuusars.exposure.client.capture.Capture;
@@ -19,16 +18,14 @@ import io.github.mortuusars.exposure.world.camera.film.properties.Levels;
 import io.github.mortuusars.exposure.world.camera.component.ShutterSpeed;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.*;
 import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
 import org.jetbrains.annotations.Nullable;
-import org.joml.Matrix4f;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -280,7 +277,7 @@ public class TestImageScreen extends Screen {
     protected void capture() {
         if (isCapturing) {
             Minecrft.get().getSoundManager().play(SimpleSoundInstance.forUI(Exposure.SoundEvents.CAMERA_GENERIC_CLICK.get(), 1f));
-            Minecrft.player().displayClientMessage(Component.literal("Capture is in progress."), false);
+            Minecrft.player().sendSystemMessage(Component.literal("Capture is in progress."));
             return;
         }
         isCapturing = true;
@@ -289,17 +286,17 @@ public class TestImageScreen extends Screen {
 
         ExposureClient.cycles().enqueueTask(Capture.of(Capture.screenshot(), CaptureAction.hideGui())
                 .handleErrorAndGetResult(err -> Minecrft.execute(() ->
-                        Minecrft.player().displayClientMessage(err.casual().withStyle(ChatFormatting.RED), false)))
+                        Minecrft.player().sendSystemMessage(err.casual().withStyle(ChatFormatting.RED))))
                 .thenAsync(ImageEffect.Crop.SQUARE_CENTER::modify)
                 .onError(err -> Minecrft.execute(() ->
-                        Minecrft.player().displayClientMessage(err.casual().withStyle(ChatFormatting.RED), false)))
+                        Minecrft.player().sendSystemMessage(err.casual().withStyle(ChatFormatting.RED))))
                 .accept(this::setImage));
     }
 
     protected void applyEdits() {
         if (renderableImage == null) {
             Minecrft.get().getSoundManager().play(SimpleSoundInstance.forUI(Exposure.SoundEvents.CAMERA_GENERIC_CLICK.get(), 1f));
-            Minecrft.player().displayClientMessage(Component.literal("No image to modify."), false);
+            Minecrft.player().sendSystemMessage(Component.literal("No image to modify."));
             return;
         }
 
@@ -330,7 +327,7 @@ public class TestImageScreen extends Screen {
             ExposureClient.imageRenderer().clearCacheOf("test_image");
         } catch (Exception e) {
             Minecrft.get().getSoundManager().play(SimpleSoundInstance.forUI(Exposure.SoundEvents.CAMERA_GENERIC_CLICK.get(), 1f));
-            Minecrft.player().displayClientMessage(Component.literal("Failed to apply edits. " + e.getMessage()), false);
+            Minecrft.player().sendSystemMessage(Component.literal("Failed to apply edits. " + e.getMessage()));
             Exposure.LOGGER.error("Failed to apply edits: ", e);
         }
         applyEditsAt = -1;
@@ -355,20 +352,20 @@ public class TestImageScreen extends Screen {
     // --
 
     @Override
-    public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
-        super.render(guiGraphics, mouseX, mouseY, partialTick);
+    public void extractRenderState(GuiGraphicsExtractor guiGraphics, int mouseX, int mouseY, float partialTick) {
+        super.extractRenderState(guiGraphics, mouseX, mouseY, partialTick);
 
         fillHorizontalGradient(guiGraphics, width - 100, -500, width, height + 500, 0x00000000, 0xBB111111);
 
         if (isCapturing) {
             String txt = "Capturing...";
-            guiGraphics.drawString(font, txt, width / 2 - font.width(txt) / 2, height / 2 - 4, 0xFFFFFFFF);
+            guiGraphics.text(font, txt, width / 2 - font.width(txt) / 2, height / 2 - 4, 0xFFFFFFFF);
             return;
         }
 
         if (renderableImage == null) {
             String txt = "<No Image>";
-            guiGraphics.drawString(font, txt, width / 2 - font.width(txt) / 2, height / 2 - 4, 0xFFFFFFFF);
+            guiGraphics.text(font, txt, width / 2 - font.width(txt) / 2, height / 2 - 4, 0xFFFFFFFF);
             return;
         }
 
@@ -376,20 +373,14 @@ public class TestImageScreen extends Screen {
             applyEdits();
         }
 
-        guiGraphics.pose().pushPose();
         float size = height * 0.8f * scale;
-        guiGraphics.pose().translate(width / 2f - size / 2f, height / 2f - size / 2f, -100);
+        float imageX = width / 2f - size / 2f;
+        float imageY = height / 2f - size / 2f;
 
         float borderPercent = 0.02f;
-        guiGraphics.fill(Mth.floor(-size * borderPercent), Mth.floor(-size * borderPercent),
-                Mth.ceil(size + (size * borderPercent)), Mth.ceil(size + (size * borderPercent)), 0xFFFFFFFF);
-        guiGraphics.pose().scale(size, size, size);
-
-
-        MultiBufferSource.BufferSource bufferSource = Minecraft.getInstance().renderBuffers().bufferSource();
-        ExposureClient.imageRenderer().render(renderableImage, guiGraphics.pose(), bufferSource, RenderCoordinates.DEFAULT, Color.WHITE);
-        bufferSource.endBatch();
-        guiGraphics.pose().popPose();
+        guiGraphics.fill(Mth.floor(imageX - size * borderPercent), Mth.floor(imageY - size * borderPercent),
+                Mth.ceil(imageX + size + size * borderPercent), Mth.ceil(imageY + size + size * borderPercent), 0xFFFFFFFF);
+        ExposureClient.imageRenderer().renderGui(renderableImage, guiGraphics, imageX, imageY, size, size, Color.WHITE);
     }
 
     @Override
@@ -428,10 +419,10 @@ public class TestImageScreen extends Screen {
     }
 
     @Override
-    public boolean mouseDragged(double mouseX, double mouseY, int button, double dragX, double dragY) {
-        if (super.mouseDragged(mouseX, mouseY, button, dragX, dragY)) return true;
+    public boolean mouseDragged(MouseButtonEvent event, double dragX, double dragY) {
+        if (super.mouseDragged(event, dragX, dragY)) return true;
 
-        if (button != InputConstants.MOUSE_BUTTON_RIGHT) return false;
+        if (event.button() != InputConstants.MOUSE_BUTTON_RIGHT) return false;
 
         // Dragging the view with mouse:
         double fov = Minecrft.options().fov().get();
@@ -444,12 +435,18 @@ public class TestImageScreen extends Screen {
         return true;
     }
 
-    private void fillHorizontalGradient(GuiGraphics guiGraphics, int x1, int y1, int x2, int y2, int colorFrom, int colorTo) {
-        VertexConsumer consumer = guiGraphics.bufferSource().getBuffer(RenderType.gui());
-        Matrix4f matrix4f = guiGraphics.pose().last().pose();
-        consumer.addVertex(matrix4f, (float) x1, (float) y1, 0).setColor(colorFrom);
-        consumer.addVertex(matrix4f, (float) x1, (float) y2, 0).setColor(colorFrom);
-        consumer.addVertex(matrix4f, (float) x2, (float) y2, 0).setColor(colorTo);
-        consumer.addVertex(matrix4f, (float) x2, (float) y1, 0).setColor(colorTo);
+    private void fillHorizontalGradient(GuiGraphicsExtractor guiGraphics, int x1, int y1, int x2, int y2, int colorFrom, int colorTo) {
+        for (int x = x1; x < x2; x++) {
+            float progress = (float) (x - x1) / Math.max(1, x2 - x1 - 1);
+            guiGraphics.fill(x, y1, x + 1, y2, interpolateArgb(colorFrom, colorTo, progress));
+        }
+    }
+
+    private static int interpolateArgb(int from, int to, float progress) {
+        int a = Math.round(((from >>> 24) & 0xFF) + (((to >>> 24) & 0xFF) - ((from >>> 24) & 0xFF)) * progress);
+        int r = Math.round(((from >>> 16) & 0xFF) + (((to >>> 16) & 0xFF) - ((from >>> 16) & 0xFF)) * progress);
+        int g = Math.round(((from >>> 8) & 0xFF) + (((to >>> 8) & 0xFF) - ((from >>> 8) & 0xFF)) * progress);
+        int b = Math.round((from & 0xFF) + ((to & 0xFF) - (from & 0xFF)) * progress);
+        return a << 24 | r << 16 | g << 8 | b;
     }
 }

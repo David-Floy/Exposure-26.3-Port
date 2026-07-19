@@ -3,13 +3,11 @@ package io.github.mortuusars.exposure.world.item;
 import io.github.mortuusars.exposure.world.entity.PhotographFrameEntity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.component.DataComponents;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.gameevent.GameEvent;
@@ -33,15 +31,12 @@ public class PhotographFrameItem extends Item {
         Level level = context.getLevel();
         PhotographFrameEntity frameEntity = createEntity(level, resultPos, direction);
 
-        CustomData customData = itemInHand.getOrDefault(DataComponents.ENTITY_DATA, CustomData.EMPTY);
-        if (!customData.isEmpty()) {
-            EntityType.updateCustomEntityTag(level, player, frameEntity, customData);
-        }
+        EntityType.createDefaultStackConfig(level, itemInHand, player).accept(frameEntity);
 
         for (int i = 2; i >= 0; i--) {
             frameEntity.setSize(i);
             if (frameEntity.survives()) {
-                if (!level.isClientSide) {
+        if (!level.isClientSide()) {
                     frameEntity.playPlacementSound();
                     level.gameEvent(player, GameEvent.ENTITY_PLACE, frameEntity.position());
                     level.addFreshEntity(frameEntity);
@@ -49,7 +44,7 @@ public class PhotographFrameItem extends Item {
 
                 frameEntity.setFrameItem((player.isCreative() ? itemInHand.copy() : itemInHand).split(1));
 
-                return InteractionResult.sidedSuccess(level.isClientSide);
+        return level.isClientSide() ? InteractionResult.SUCCESS : InteractionResult.SUCCESS_SERVER;
             }
         }
 

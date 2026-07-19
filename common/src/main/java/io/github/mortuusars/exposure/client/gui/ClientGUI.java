@@ -8,8 +8,6 @@ import io.github.mortuusars.exposure.world.item.crafting.recipe.FilmDevelopingRe
 import io.github.mortuusars.exposure.world.item.crafting.recipe.PhotographCopyingRecipe;
 import io.github.mortuusars.exposure.world.item.util.ItemAndStack;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.core.NonNullList;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.Style;
 import net.minecraft.util.Mth;
@@ -20,7 +18,6 @@ import net.minecraft.world.item.crafting.*;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.function.Predicate;
 
 public class ClientGUI {
@@ -60,23 +57,26 @@ public class ClientGUI {
         }
 
         tooltipComponents.add(Component.translatable("tooltip.exposure.hold_for_details"));
-        if (!Screen.hasShiftDown()) {
+        if (!Minecraft.getInstance().hasShiftDown()) {
             return;
         }
 
-        Optional<NonNullList<Ingredient>> recipeIngredients = Minecraft.getInstance().level
-                .getRecipeManager()
-                .getAllRecipesFor(RecipeType.CRAFTING)
+        if (!(Minecraft.getInstance().getConnection().recipes() instanceof RecipeManager recipeManager)) {
+            return;
+        }
+
+        List<Ingredient> recipeIngredients = recipeManager.getRecipes()
                 .stream()
                 .map(RecipeHolder::value)
-                .filter(recipeFilter)
+                .filter(recipe -> recipe instanceof CraftingRecipe craftingRecipe && recipeFilter.test(craftingRecipe))
                 .findFirst()
-                .map(Recipe::getIngredients);
+                .map(recipe -> recipe.placementInfo().ingredients())
+                .orElse(List.of());
 
-        if (recipeIngredients.isEmpty() || recipeIngredients.get().isEmpty())
+        if (recipeIngredients.isEmpty())
             return;
 
-        NonNullList<Ingredient> ingredients = recipeIngredients.get();
+        List<Ingredient> ingredients = recipeIngredients;
 
         tooltipComponents.add(Component.empty());
 
@@ -86,7 +86,7 @@ public class ClientGUI {
         tooltipComponents.add(Component.translatable(detailsKey).withStyle(orange));
 
         for (int i = 0; i < ingredients.size(); i++) {
-            ItemStack[] stacks = ingredients.get(i).getItems();
+            ItemStack[] stacks = ingredients.get(i).items().map(ItemStack::new).toArray(ItemStack[]::new);
 
             if (stacks.length == 0)
                 tooltipComponents.add(Component.literal("  ").append(Component.literal("?").withStyle(yellow)));

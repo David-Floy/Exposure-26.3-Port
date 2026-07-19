@@ -1,15 +1,15 @@
 package io.github.mortuusars.exposure.fabric.mixin;
 
-import com.mojang.blaze3d.vertex.PoseStack;
 import io.github.mortuusars.exposure.client.util.Minecrft;
 import io.github.mortuusars.exposure.world.entity.CameraStandEntity;
 import net.minecraft.client.Camera;
 import net.minecraft.client.DeltaTracker;
-import net.minecraft.client.renderer.*;
-import net.minecraft.util.FastColor;
+import net.minecraft.client.renderer.LevelRenderer;
+import net.minecraft.client.renderer.culling.Frustum;
+import net.minecraft.client.renderer.entity.EntityRenderDispatcher;
+import net.minecraft.client.renderer.entity.state.EntityRenderState;
+import net.minecraft.client.renderer.state.level.LevelRenderState;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.phys.Vec3;
-import org.joml.Matrix4f;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -20,40 +20,38 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(LevelRenderer.class)
 public abstract class LevelRendererMixin {
-    @Shadow private int renderedEntities;
-    @Final @Shadow private RenderBuffers renderBuffers;
-    @Shadow protected abstract boolean shouldShowEntityOutlines();
-    @Shadow private void renderEntity(Entity entity, double camX, double camY, double camZ, float partialTick, PoseStack poseStack, MultiBufferSource bufferSource) {}
+    @Final
+    @Shadow
+    private EntityRenderDispatcher entityRenderDispatcher;
 
-    @Inject(method = "renderLevel", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/multiplayer/ClientLevel;entitiesForRendering()Ljava/lang/Iterable;"))
-    private void onRenderLevel(DeltaTracker deltaTracker, boolean renderBlockOutline, Camera camera, GameRenderer gameRenderer, LightTexture lightTexture, Matrix4f frustumMatrix, Matrix4f projectionMatrix, CallbackInfo ci) {
-        if (camera.getEntity() instanceof CameraStandEntity) {
-            exposure$renderEntity(deltaTracker, camera, Minecrft.player());
+    @Shadow
+    protected abstract boolean shouldShowEntityOutlines();
+
+    @Inject(
+            method = "extractVisibleEntities(Lnet/minecraft/client/Camera;Lnet/minecraft/client/renderer/culling/Frustum;Lnet/minecraft/client/DeltaTracker;Lnet/minecraft/client/renderer/state/level/LevelRenderState;)V",
+            at = @At(value = "INVOKE", target = "Lnet/minecraft/client/multiplayer/ClientLevel;entitiesForRendering()Ljava/lang/Iterable;"))
+    private void exposure$extractPlayerWhenUsingCameraStand(Camera camera, Frustum frustum, DeltaTracker deltaTracker,
+                                                              LevelRenderState levelRenderState, CallbackInfo ci) {
+        if (camera.entity() instanceof CameraStandEntity) {
+            exposure$extractEntity(deltaTracker, levelRenderState, Minecrft.player());
         }
     }
 
     @Unique
-    private void exposure$renderEntity(DeltaTracker deltaTracker, Camera camera, Entity entity) {
-        this.renderedEntities++;
+    private void exposure$extractEntity(DeltaTracker deltaTracker, LevelRenderState levelRenderState, Entity entity) {
         if (entity.tickCount == 0) {
             entity.xOld = entity.getX();
             entity.yOld = entity.getY();
             entity.zOld = entity.getZ();
         }
 
-        MultiBufferSource multiBufferSource;
-        if (this.shouldShowEntityOutlines() && Minecrft.get().shouldEntityAppearGlowing(entity)) {
-            OutlineBufferSource outlineBufferSource = this.renderBuffers.outlineBufferSource();
-            multiBufferSource = outlineBufferSource;
-            int i = entity.getTeamColor();
-            outlineBufferSource.setColor(FastColor.ARGB32.red(i), FastColor.ARGB32.green(i), FastColor.ARGB32.blue(i), 255);
-        } else {
-            multiBufferSource = this.renderBuffers.bufferSource();
-        }
+        float partialTick = deltaTracker.getGameTimeDeltaPartialTick(
+                !Minecrft.level().tickRateManager().isEntityFrozen(entity));
+        EntityRenderState renderState = entityRenderDispatcher.extractEntity(entity, partialTick);
+        levelRenderState.entityRenderStates.add(renderState);
 
-        float partialTick = deltaTracker.getGameTimeDeltaPartialTick(!Minecrft.level().tickRateManager().isEntityFrozen(entity));
-        Vec3 position = camera.getPosition();
-        PoseStack poseStack = new PoseStack();
-        this.renderEntity(entity, position.x, position.y, position.z, partialTick, poseStack, multiBufferSource);
+        if (renderState.appearsGlowing() && shouldShowEntityOutlines()) {
+            levelRenderState.haveGlowingEntities = true;
+        }
     }
 }

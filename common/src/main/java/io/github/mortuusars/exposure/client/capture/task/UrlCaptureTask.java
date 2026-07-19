@@ -19,10 +19,12 @@ import java.awt.image.BufferedImage;
 import java.net.IDN;
 import java.net.InetAddress;
 import java.net.URI;
+import java.net.URLConnection;
 import java.net.UnknownHostException;
 import java.util.Locale;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
+import java.io.InputStream;
 
 public class UrlCaptureTask extends Task<Result<Image>> {
     private static final Logger LOGGER = LogUtils.getLogger();
@@ -67,8 +69,8 @@ public class UrlCaptureTask extends Task<Result<Image>> {
                 if (!Config.Client.URL_LOADING_ALLOWED_DOMAINS.get().contains(host)
                       && Config.Client.URL_LOADING_ALLOWED_SUBDOMAINS.get().stream().noneMatch(host::endsWith)) {
                     LOGGER.error("Domain is not allowed for image loading. URL: {}", uri);
-                    Minecrft.player().displayClientMessage(Component.literal("Domain is not allowed for image projecting.")
-                          .withStyle(ChatFormatting.RED), false);
+                    Minecrft.player().sendSystemMessage(Component.literal("Domain is not allowed for image projecting.")
+                          .withStyle(ChatFormatting.RED));
                     yield false;
                 }
 
@@ -110,7 +112,14 @@ public class UrlCaptureTask extends Task<Result<Image>> {
             LOGGER.info("Attempting to load image from URL: '{}'", uri.toString());
 
             try {
-                @Nullable BufferedImage image = ImageIO.read(uri.toURL());
+                int timeoutMillis = Math.toIntExact(Config.Server.PROJECT_TIMEOUT_TICKS.get() * SharedConstants.MILLIS_PER_TICK);
+                URLConnection connection = uri.toURL().openConnection();
+                connection.setConnectTimeout(timeoutMillis);
+                connection.setReadTimeout(timeoutMillis);
+                @Nullable BufferedImage image;
+                try (InputStream input = connection.getInputStream()) {
+                    image = ImageIO.read(input);
+                }
 
                 if (image == null) {
                     LOGGER.error("Cannot load image from URL '{}'", uri);

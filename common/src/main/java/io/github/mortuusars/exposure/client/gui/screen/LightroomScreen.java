@@ -2,8 +2,6 @@ package io.github.mortuusars.exposure.client.gui.screen;
 
 import com.google.common.base.Preconditions;
 import com.mojang.blaze3d.platform.InputConstants;
-import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.PoseStack;
 import io.github.mortuusars.exposure.Exposure;
 import io.github.mortuusars.exposure.ExposureClient;
 import io.github.mortuusars.exposure.client.gui.toast.BetterTutorialToast;
@@ -27,7 +25,7 @@ import io.github.mortuusars.exposure.world.inventory.LightroomMenu;
 import io.github.mortuusars.exposure.util.PagingDirection;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.ImageButton;
 import net.minecraft.client.gui.components.Tooltip;
@@ -35,7 +33,8 @@ import net.minecraft.client.gui.components.WidgetSprites;
 import net.minecraft.client.gui.components.toasts.TutorialToast;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
-import net.minecraft.client.renderer.GameRenderer;
+import net.minecraft.client.input.KeyEvent;
+import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.Rect2i;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
@@ -43,7 +42,7 @@ import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.Style;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
@@ -56,8 +55,8 @@ import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
 
 public class LightroomScreen extends AbstractContainerScreen<LightroomMenu> {
-    public static final ResourceLocation MAIN_TEXTURE = Exposure.resource("textures/gui/lightroom.png");
-    public static final ResourceLocation FILM_OVERLAYS_TEXTURE = Exposure.resource("textures/gui/lightroom_film_overlays.png");
+    public static final Identifier MAIN_TEXTURE = Exposure.resource("textures/gui/lightroom.png");
+    public static final Identifier FILM_OVERLAYS_TEXTURE = Exposure.resource("textures/gui/lightroom_film_overlays.png");
 
     public static final WidgetSprites PRINT_BUTTON_SPRITES = new WidgetSprites(
             Exposure.resource("lightroom/print_button"),
@@ -90,7 +89,7 @@ public class LightroomScreen extends AbstractContainerScreen<LightroomMenu> {
     protected boolean hasShownDevelopingToast;
 
     public LightroomScreen(LightroomMenu menu, Inventory playerInventory, Component title) {
-        super(menu, playerInventory, title);
+        super(menu, playerInventory, title, 176, 209);
         this.player = playerInventory.player;
 
         this.mode = getMenu().getBlockEntity().getActualPrintingMode();
@@ -98,8 +97,6 @@ public class LightroomScreen extends AbstractContainerScreen<LightroomMenu> {
 
     @Override
     protected void init() {
-        imageWidth = 176;
-        imageHeight = 209;
         super.init();
         inventoryLabelY = 116;
 
@@ -114,7 +111,7 @@ public class LightroomScreen extends AbstractContainerScreen<LightroomMenu> {
 
         printButton = new ImageButton(leftPos + 117, topPos + 89, 22, 22, PRINT_BUTTON_SPRITES,
                 button -> {
-                    int buttonId = Screen.hasShiftDown() && player.isCreative() ? LightroomMenu.PRINT_CREATIVE_BUTTON_ID : LightroomMenu.PRINT_BUTTON_ID;
+                    int buttonId = Minecrft.get().hasShiftDown() && player.isCreative() ? LightroomMenu.PRINT_CREATIVE_BUTTON_ID : LightroomMenu.PRINT_BUTTON_ID;
                     clickButton(buttonId);
                 }, Component.translatable("gui.exposure.lightroom.print"));
         updatePrintButtonTooltip();
@@ -173,14 +170,14 @@ public class LightroomScreen extends AbstractContainerScreen<LightroomMenu> {
     }
 
     @Override
-    public void render(@NotNull GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
+    public void extractContents(@NotNull GuiGraphicsExtractor guiGraphics, int mouseX, int mouseY, float partialTick) {
         updateButtons();
-        super.render(guiGraphics, mouseX, mouseY, partialTick);
-        renderTooltip(guiGraphics, mouseX, mouseY);
+        renderBg(guiGraphics, partialTick, mouseX, mouseY);
+        super.extractContents(guiGraphics, mouseX, mouseY, partialTick);
     }
 
     protected void updateButtons() {
-        printButton.active = getMenu().getBlockEntity().canPrint() || (player.isCreative() && Screen.hasShiftDown() && getMenu().getBlockEntity().canPrintInCreativeMode());
+        printButton.active = getMenu().getBlockEntity().canPrint() || (player.isCreative() && Minecrft.get().hasShiftDown() && getMenu().getBlockEntity().canPrintInCreativeMode());
         printButton.visible = !getMenu().isPrinting();
         updatePrintButtonTooltip();
 
@@ -188,14 +185,9 @@ public class LightroomScreen extends AbstractContainerScreen<LightroomMenu> {
         printingModeToggleButton.visible = getMenu().canChangeProcess();
     }
 
-    @Override
-    protected void renderBg(@NotNull GuiGraphics guiGraphics, float partialTick, int mouseX, int mouseY) {
-        RenderSystem.setShader(GameRenderer::getPositionTexShader);
-        RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
-        RenderSystem.enableBlend();
-        RenderSystem.defaultBlendFunc();
-        guiGraphics.blit(MAIN_TEXTURE, leftPos, topPos, 0, 0, imageWidth, imageHeight);
-        guiGraphics.blit(MAIN_TEXTURE, leftPos - 27, topPos + 35, 0, 209, 28, 31);
+    protected void renderBg(@NotNull GuiGraphicsExtractor guiGraphics, float partialTick, int mouseX, int mouseY) {
+        guiGraphics.blit(net.minecraft.client.renderer.RenderPipelines.GUI_TEXTURED, MAIN_TEXTURE, leftPos, topPos, 0, 0, imageWidth, imageHeight, 256, 256);
+        guiGraphics.blit(net.minecraft.client.renderer.RenderPipelines.GUI_TEXTURED, MAIN_TEXTURE, leftPos - 27, topPos + 35, 0, 209, 28, 31, 256, 256);
 
         renderSlotPlaceholders(guiGraphics, mouseX, mouseY, partialTick);
 
@@ -203,12 +195,12 @@ public class LightroomScreen extends AbstractContainerScreen<LightroomMenu> {
             int progress = getMenu().getData().get(LightroomBlockEntity.CONTAINER_DATA_PROGRESS_ID);
             int time = getMenu().getData().get(LightroomBlockEntity.CONTAINER_DATA_PRINT_TIME_ID);
             int width = progress != 0 && time != 0 ? progress * 24 / time : 0;
-            guiGraphics.blit(MAIN_TEXTURE, leftPos + 116, topPos + 91, 176, 0, width, 17);
+            guiGraphics.blit(net.minecraft.client.renderer.RenderPipelines.GUI_TEXTURED, MAIN_TEXTURE, leftPos + 116, topPos + 91, 176, 0, width, 17, 256, 256);
         }
 
         List<Frame> frames = getMenu().getExposedFrames();
         if (frames.isEmpty()) {
-            guiGraphics.blit(FILM_OVERLAYS_TEXTURE, leftPos + 4, topPos + 15, 0, 136, 168, 68);
+            guiGraphics.blit(net.minecraft.client.renderer.RenderPipelines.GUI_TEXTURED, FILM_OVERLAYS_TEXTURE, leftPos + 4, topPos + 15, 0, 136, 168, 68, 256, 256);
             return;
         }
 
@@ -224,62 +216,55 @@ public class LightroomScreen extends AbstractContainerScreen<LightroomMenu> {
         @Nullable Frame centerFrame = getMenu().getFrameByIndex(selectedFrame);
         @Nullable Frame rightFrame = getMenu().getFrameByIndex(selectedFrame + 1);
 
-        RenderSystem.setShaderColor(filmColor.r(), filmColor.g(), filmColor.b(), filmColor.a());
+        int filmTint = io.github.mortuusars.exposure.util.color.Color.argbF(filmColor.a(), filmColor.r(), filmColor.g(), filmColor.b()).getARGB();
 
         // Left film part
-        guiGraphics.blit(FILM_OVERLAYS_TEXTURE, leftPos + 1, topPos + 15, 0, leftFrame != null ? 68 : 0, 54, 68);
+        guiGraphics.blit(net.minecraft.client.renderer.RenderPipelines.GUI_TEXTURED, FILM_OVERLAYS_TEXTURE, leftPos + 1, topPos + 15, 0, leftFrame != null ? 68 : 0, 54, 68, 256, 256, filmTint);
         // Center film part
-        guiGraphics.blit(FILM_OVERLAYS_TEXTURE, leftPos + 55, topPos + 15, 55, rightFrame != null ? 0 : 68, 64, 68);
+        guiGraphics.blit(net.minecraft.client.renderer.RenderPipelines.GUI_TEXTURED, FILM_OVERLAYS_TEXTURE, leftPos + 55, topPos + 15, 55, rightFrame != null ? 0 : 68, 64, 68, 256, 256, filmTint);
         // Right film part
         if (rightFrame != null) {
             boolean hasMoreFrames = selectedFrame + 2 < frames.size();
-            guiGraphics.blit(FILM_OVERLAYS_TEXTURE, leftPos + 119, topPos + 15, 120, hasMoreFrames ? 68 : 0, 56, 68);
+            guiGraphics.blit(net.minecraft.client.renderer.RenderPipelines.GUI_TEXTURED, FILM_OVERLAYS_TEXTURE, leftPos + 119, topPos + 15, 120, hasMoreFrames ? 68 : 0, 56, 68, 256, 256, filmTint);
         }
 
-        RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
-        PoseStack poseStack = guiGraphics.pose();
-
         if (leftFrame != null)
-            renderFrame(leftFrame, poseStack, leftPos + 6, topPos + 22, FRAME_SIZE, isOverLeftFrame(mouseX, mouseY) ? 0.8f : 0.25f, exposureType);
+            renderFrame(leftFrame, guiGraphics, leftPos + 6, topPos + 22, FRAME_SIZE, isOverLeftFrame(mouseX, mouseY) ? 0.8f : 0.25f, exposureType);
         if (centerFrame != null)
-            renderFrame(centerFrame, poseStack, leftPos + 61, topPos + 22, FRAME_SIZE, 0.9f, exposureType);
+            renderFrame(centerFrame, guiGraphics, leftPos + 61, topPos + 22, FRAME_SIZE, 0.9f, exposureType);
         if (rightFrame != null)
-            renderFrame(rightFrame, poseStack, leftPos + 116, topPos + 22, FRAME_SIZE, isOverRightFrame(mouseX, mouseY) ? 0.8f : 0.25f, exposureType);
-
-        RenderSystem.setShaderColor(filmColor.r(), filmColor.g(), filmColor.b(), filmColor.a());
+            renderFrame(rightFrame, guiGraphics, leftPos + 116, topPos + 22, FRAME_SIZE, isOverRightFrame(mouseX, mouseY) ? 0.8f : 0.25f, exposureType);
 
         if (getMenu().getBlockEntity().isAdvancingFrameOnPrint()) {
-            poseStack.pushPose();
-            poseStack.translate(0, 0, 800);
+            guiGraphics.nextStratum();
 
             if (selectedFrame < getMenu().getTotalFramesCount() - 1) {
                 // Advance Arrow
-                guiGraphics.blit(MAIN_TEXTURE, leftPos + 111, topPos + 44, 200, 0, 10, 10);
+                guiGraphics.blit(net.minecraft.client.renderer.RenderPipelines.GUI_TEXTURED, MAIN_TEXTURE,
+                        leftPos + 111, topPos + 44, 200, 0, 10, 10, 256, 256);
             } else {
                 // Eject Arrow
-                guiGraphics.blit(MAIN_TEXTURE, leftPos + 111, topPos + 44, 210, 0, 10, 10);
+                guiGraphics.blit(net.minecraft.client.renderer.RenderPipelines.GUI_TEXTURED, MAIN_TEXTURE,
+                        leftPos + 111, topPos + 44, 210, 0, 10, 10, 256, 256);
             }
-
-            poseStack.popPose();
         }
 
-        RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
     }
 
-    private void renderSlotPlaceholders(@NotNull GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
+    private void renderSlotPlaceholders(@NotNull GuiGraphicsExtractor guiGraphics, int mouseX, int mouseY, float partialTick) {
         for (int slotIndex : slotPlaceholders.keySet()) {
             Slot slot = getMenu().getSlot(slotIndex);
             if (!slot.hasItem()) {
                 Rect2i placeholder = slotPlaceholders.get(slotIndex);
-                guiGraphics.blit(MAIN_TEXTURE, leftPos + slot.x - 1, topPos + slot.y - 1,
-                        placeholder.getX(), placeholder.getY(), placeholder.getWidth(), placeholder.getHeight());
+                guiGraphics.blit(net.minecraft.client.renderer.RenderPipelines.GUI_TEXTURED, MAIN_TEXTURE, leftPos + slot.x - 1, topPos + slot.y - 1,
+                        placeholder.getX(), placeholder.getY(), placeholder.getWidth(), placeholder.getHeight(), 256, 256);
             }
         }
     }
 
     @Override
-    protected void renderTooltip(@NotNull GuiGraphics guiGraphics, int mouseX, int mouseY) {
-        super.renderTooltip(guiGraphics, mouseX, mouseY);
+    protected void extractTooltip(@NotNull GuiGraphicsExtractor guiGraphics, int mouseX, int mouseY) {
+        super.extractTooltip(guiGraphics, mouseX, mouseY);
 
         boolean advancedTooltips = Minecraft.getInstance().options.advancedItemTooltips;
         int selectedFrame = getMenu().getSelectedFrame();
@@ -306,7 +291,8 @@ public class LightroomScreen extends AbstractContainerScreen<LightroomMenu> {
             tooltipLines.add(Component.translatable("gui.exposure.lightroom.zoom_in.tooltip"));
         }
 
-        guiGraphics.renderTooltip(Minecraft.getInstance().font, tooltipLines, Optional.empty(), mouseX, mouseY);
+        if (!tooltipLines.isEmpty())
+            guiGraphics.setTooltipForNextFrame(Minecraft.getInstance().font, tooltipLines, Optional.empty(), mouseX, mouseY);
     }
 
     private void addFrameInfoTooltipLines(List<Component> tooltipLines, int frameIndex, boolean isAdvancedTooltips) {
@@ -348,24 +334,21 @@ public class LightroomScreen extends AbstractContainerScreen<LightroomMenu> {
         return selectedFrame + 1 >= 0 && selectedFrame + 1 < frames.size() && isHovering(116, 22, FRAME_SIZE, FRAME_SIZE, mouseX, mouseY);
     }
 
-    public void renderFrame(@NotNull Frame frame, PoseStack poseStack,
+    public void renderFrame(@NotNull Frame frame, GuiGraphicsExtractor guiGraphics,
                             float x, float y, float size, float alpha, ExposureType exposureType) {
         RenderableImage image = ExposureClient.renderedExposures().getOrCreate(frame).modifyWith(ImageEffect.NEGATIVE_FILM);
-
-        MultiBufferSource.BufferSource bufferSource = Minecraft.getInstance().renderBuffers().bufferSource();
-        ExposureClient.imageRenderer().render(image, poseStack, bufferSource, new RenderCoordinates(x, y, size, size),
+        ExposureClient.imageRenderer().renderGui(image, guiGraphics, x, y, size, size,
                 exposureType.getImageColor().withAlpha((int) (alpha * 255)));
-        bufferSource.endBatch();
     }
 
     @Override
-    public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
-        return keyBindings.keyPressed(keyCode, scanCode, modifiers) || super.keyPressed(keyCode, scanCode, modifiers);
+    public boolean keyPressed(KeyEvent event) {
+        return keyBindings.keyPressed(event) || super.keyPressed(event);
     }
 
     @Override
-    public boolean keyReleased(int keyCode, int scanCode, int modifiers) {
-        return keyBindings.keyReleased(keyCode, scanCode, modifiers) || super.keyReleased(keyCode, scanCode, modifiers);
+    public boolean keyReleased(KeyEvent event) {
+        return keyBindings.keyReleased(event) || super.keyReleased(event);
     }
 
     @Override
@@ -381,13 +364,15 @@ public class LightroomScreen extends AbstractContainerScreen<LightroomMenu> {
     }
 
     @Override
-    public boolean mouseClicked(double mouseX, double mouseY, int button) {
-        if (button == 0) {
+    public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
+        double mouseX = event.x();
+        double mouseY = event.y();
+        if (event.button() == 0) {
             Slot filmSlot = getMenu().getSlot(Lightroom.FILM_SLOT);
             if (!hasShownDevelopingToast && !filmSlot.hasItem()
                     && isHovering(filmSlot.x, filmSlot.y, 16, 16, mouseX, mouseY)
                     && getMenu().getCarried().getItem() instanceof FilmRollItem) {
-                Minecrft.get().getToasts().addToast(new BetterTutorialToast(ToastIcon.HEADS_UP,
+                Minecrft.get().getToastManager().addToast(new BetterTutorialToast(ToastIcon.HEADS_UP,
                         Component.translatable("gui.exposure.lightroom.toast.develop_film.title"),
                         null, BetterTutorialToast.DEFAULT_SHOW_DURATION_MS));
                 hasShownDevelopingToast = true;
@@ -409,7 +394,7 @@ public class LightroomScreen extends AbstractContainerScreen<LightroomMenu> {
             }
         }
 
-        return super.mouseClicked(mouseX, mouseY, button);
+        return super.mouseClicked(event, doubleClick);
     }
 
     public void changeFrame(PagingDirection navigation) {
@@ -436,8 +421,8 @@ public class LightroomScreen extends AbstractContainerScreen<LightroomMenu> {
     }
 
     @Override
-    protected boolean hasClickedOutside(double mouseX, double mouseY, int guiLeft, int guiTop, int mouseButton) {
-        return super.hasClickedOutside(mouseX, mouseY, guiLeft, guiTop, mouseButton)
+    protected boolean hasClickedOutside(double mouseX, double mouseY, int guiLeft, int guiTop) {
+        return super.hasClickedOutside(mouseX, mouseY, guiLeft, guiTop)
                 && hoveredSlot == null;
     }
 }

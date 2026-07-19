@@ -20,21 +20,23 @@ public class NativeImageFileSaver {
         this.file = new File(filePath);
     }
 
-    public void save(Image image) {
+    public boolean save(Image image) {
         try (NativeImage nativeImage = new NativeImage(image.width(), image.height(), false)) {
             for (int y = 0; y < image.height(); y++) {
                 for (int x = 0; x < image.width(); x++) {
                     int pixelColor = image.getPixelARGB(x, y);
-                    nativeImage.setPixelRGBA(x, y, Color.ARGBtoABGR(pixelColor));
+                    nativeImage.setPixelABGR(x, y, Color.ARGBtoABGR(pixelColor));
                 }
             }
 
             boolean ignored = file.getParentFile().mkdirs();
             nativeImage.writeToFile(file);
             LOGGER.info("Saved image: {}", file);
+            return true;
         }
         catch (Exception e) {
             LOGGER.error("Failed to save image to file: {}", e.toString());
+            return false;
         }
     }
 }

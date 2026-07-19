@@ -2,7 +2,6 @@ package io.github.mortuusars.exposure.client.gui.screen;
 
 import com.google.common.base.Preconditions;
 import com.mojang.blaze3d.platform.InputConstants;
-import com.mojang.blaze3d.systems.RenderSystem;
 import io.github.mortuusars.exposure.Config;
 import io.github.mortuusars.exposure.Exposure;
 import io.github.mortuusars.exposure.ExposureClient;
@@ -24,14 +23,14 @@ import io.github.mortuusars.exposure.world.item.PhotographItem;
 import io.github.mortuusars.exposure.world.item.util.ItemAndStack;
 import io.github.mortuusars.exposure.util.PagingDirection;
 import io.github.mortuusars.exposure.world.sound.SoundEffect;
-import net.minecraft.Util;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.util.Util;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.ImageButton;
 import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.client.renderer.LightTexture;
-import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.input.KeyEvent;
+import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 import net.minecraft.util.StringUtil;
 import net.minecraft.world.item.ItemStack;
@@ -147,38 +146,27 @@ public class PhotographScreen extends Screen {
     }
 
     @Override
-    public void render(@NotNull GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
+    public void extractRenderState(@NotNull GuiGraphicsExtractor guiGraphics, int mouseX, int mouseY, float partialTick) {
         float zoomFactor = height * 0.8f;
         float scale = (float) (zoom.get() * zoomFactor);
 
-        RenderSystem.enableBlend();
-        RenderSystem.defaultBlendFunc();
-        RenderSystem.disableDepthTest();
-
-        renderTransparentBackground(guiGraphics);
-
-        guiGraphics.pose().pushPose();
-        guiGraphics.pose().translate(x, y, 0);
-        guiGraphics.pose().translate(width / 2f, height / 2f, 50);
-        guiGraphics.pose().scale(scale, scale, scale);
-        guiGraphics.pose().translate(-0.5, -0.5, 0);
-
-        MultiBufferSource.BufferSource bufferSource = Minecrft.get().renderBuffers().bufferSource();
-
-        ExposureClient.photographRenderer().renderStackedPhotographs(photographs, guiGraphics.pose(), bufferSource,
-                LightTexture.FULL_BRIGHT, 255, 255, 255, 255);
-
-        bufferSource.endBatch();
-        guiGraphics.pose().popPose();
+        extractTransparentBackground(guiGraphics);
+        for (int i = Math.min(2, photographs.size() - 1); i >= 0; i--) {
+            ItemAndStack<PhotographItem> photograph = photographs.get(i);
+            float offset = i * ExposureClient.photographRenderer().getStackedPhotographOffset() * scale;
+            float brightness = 1f - ExposureClient.photographRenderer().getStackedBrightnessStep() * i;
+            io.github.mortuusars.exposure.util.color.Color color = new io.github.mortuusars.exposure.util.color.Color(255,
+                    (int) (255 * brightness), (int) (255 * brightness), (int) (255 * brightness));
+            ExposureClient.photographRenderer().renderGui(photograph.getItemStack(), guiGraphics,
+                    width / 2f + x - scale / 2f + offset, height / 2f + y - scale / 2f + offset, scale, color, i == 0);
+        }
 
         ItemAndStack<PhotographItem> photograph = getCurrentPhotograph();
 
-        guiGraphics.pose().pushPose();
         // Places widgets above photograph, because they will be covered when photo is zoomed in
-        guiGraphics.pose().translate(0, 0, 100);
-        super.render(guiGraphics, mouseX, mouseY, partialTick);
+        guiGraphics.nextStratum();
+        super.extractRenderState(guiGraphics, mouseX, mouseY, partialTick);
         renderFrameInfoHint(guiGraphics, mouseX, mouseY, photograph);
-        guiGraphics.pose().popPose();
 
         if (Config.Client.EXPORT_PHOTOGRAPH_WHEN_VIEWED.get()) {
             trySaveToFile(photograph);
@@ -186,12 +174,12 @@ public class PhotographScreen extends Screen {
     }
 
     @Override
-    public void renderBackground(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
+    public void extractBackground(GuiGraphicsExtractor guiGraphics, int mouseX, int mouseY, float partialTick) {
         // Background is rendered manually in #render method.
         // Otherwise, background will be rendered on top of a photograph.
     }
 
-    private void renderFrameInfoHint(@NotNull GuiGraphics guiGraphics, int mouseX, int mouseY, ItemAndStack<PhotographItem> photograph) {
+    private void renderFrameInfoHint(@NotNull GuiGraphicsExtractor guiGraphics, int mouseX, int mouseY, ItemAndStack<PhotographItem> photograph) {
         if (Minecrft.get().player == null || !Minecrft.get().player.isCreative()) {
             return;
         }
@@ -201,10 +189,10 @@ public class PhotographScreen extends Screen {
             return;
         }
 
-        guiGraphics.drawString(font, "?", width - font.width("?") - 10, 10, 0xFFFFFFFF);
+        guiGraphics.text(font, "?", width - font.width("?") - 10, 10, 0xFFFFFFFF);
 
         if (mouseX > width - 20 && mouseX < width && mouseY < 20) {
-            String exposureName = frame.identifier().map(id -> id, ResourceLocation::toString);
+            String exposureName = frame.identifier().map(id -> id, Identifier::toString);
 
             List<Component> lines = new ArrayList<>();
 
@@ -220,18 +208,18 @@ public class PhotographScreen extends Screen {
                 }
             });
 
-            guiGraphics.renderTooltip(font, lines, Optional.empty(), mouseX, mouseY + 20);
+            guiGraphics.setTooltipForNextFrame(font, lines, Optional.empty(), mouseX, mouseY + 20);
         }
     }
 
     @Override
-    public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
-        return keyBindings.keyPressed(keyCode, scanCode, modifiers) || super.keyPressed(keyCode, scanCode, modifiers);
+    public boolean keyPressed(KeyEvent event) {
+        return keyBindings.keyPressed(event) || super.keyPressed(event);
     }
 
     @Override
-    public boolean keyReleased(int keyCode, int scanCode, int modifiers) {
-        return keyBindings.keyReleased(keyCode, scanCode, modifiers) || super.keyReleased(keyCode, scanCode, modifiers);
+    public boolean keyReleased(KeyEvent event) {
+        return keyBindings.keyReleased(event) || super.keyReleased(event);
     }
 
     @Override
@@ -247,10 +235,10 @@ public class PhotographScreen extends Screen {
     }
 
     @Override
-    public boolean mouseDragged(double mouseX, double mouseY, int button, double dragX, double dragY) {
-        if (super.mouseDragged(mouseX, mouseY, button, dragX, dragY)) return true;
+    public boolean mouseDragged(MouseButtonEvent event, double dragX, double dragY) {
+        if (super.mouseDragged(event, dragX, dragY)) return true;
 
-        if (button == InputConstants.MOUSE_BUTTON_LEFT) {
+        if (event.button() == InputConstants.MOUSE_BUTTON_LEFT) {
             float centerX = width / 2f;
             float centerY = height / 2f;
             x = (float) Mth.clamp(x + dragX, -centerX, centerX);
@@ -280,8 +268,8 @@ public class PhotographScreen extends Screen {
         droppedStack.set(Exposure.DataComponents.PHOTOGRAPH_TYPE, type);
 
         Minecrft.gameMode().handleCreativeModeItemDrop(droppedStack);
-        Minecrft.player().displayClientMessage(Component.translatable("gui.exposure.photograph_screen.item_dropped_message",
-                droppedStack.getDisplayName()), false);
+        Minecrft.player().sendSystemMessage(Component.translatable("gui.exposure.photograph_screen.item_dropped_message",
+                droppedStack.getDisplayName()));
         return true;
     }
 
@@ -290,10 +278,10 @@ public class PhotographScreen extends Screen {
         if (!Minecrft.player().isCreative() || frame.equals(Frame.EMPTY)) {
             return false;
         }
-        String text = frame.identifier().map(id -> id, ResourceLocation::toString);
+        String text = frame.identifier().map(id -> id, Identifier::toString);
         Minecrft.get().keyboardHandler.setClipboard(text);
-        Minecrft.player().displayClientMessage(
-                Component.translatable("gui.exposure.photograph_screen.copied_message", text), false);
+        Minecrft.player().sendSystemMessage(
+                Component.translatable("gui.exposure.photograph_screen.copied_message", text));
         return true;
     }
 
@@ -304,8 +292,8 @@ public class PhotographScreen extends Screen {
                 .mapId(id -> {
                     if (savedExposureFiles.get(id) instanceof File file) {
                         Minecrft.get().keyboardHandler.setClipboard(file.getAbsolutePath());
-                        Minecrft.player().displayClientMessage(
-                                Component.translatable("gui.exposure.photograph_screen.copied_message", file.getAbsolutePath()), false);
+                        Minecrft.player().sendSystemMessage(
+                                Component.translatable("gui.exposure.photograph_screen.copied_message", file.getAbsolutePath()));
                         return true;
                     }
                     return false;

@@ -62,9 +62,13 @@ public abstract class AbstractCameraAttachmentsMenu extends AbstractContainerMen
             public int getMaxStackSize() {
                 return 1;
             }
-        };
 
-        container.addListener(this::onContainerChanged);
+            @Override
+            public void setChanged() {
+                super.setChanged();
+                onContainerChanged(this);
+            }
+        };
         return container;
     }
 

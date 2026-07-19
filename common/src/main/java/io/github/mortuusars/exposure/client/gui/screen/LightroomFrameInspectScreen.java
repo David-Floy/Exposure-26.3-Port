@@ -4,7 +4,8 @@ import com.mojang.blaze3d.platform.InputConstants;
 import io.github.mortuusars.exposure.Exposure;
 import io.github.mortuusars.exposure.client.util.Minecrft;
 import io.github.mortuusars.exposure.util.PagingDirection;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.input.MouseButtonEvent;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Collections;
@@ -31,8 +32,8 @@ public class LightroomFrameInspectScreen extends FilmFrameInspectScreen {
     }
 
     @Override
-    public void render(@NotNull GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
-        super.render(guiGraphics, mouseX, mouseY, partialTick);
+    public void extractRenderState(@NotNull GuiGraphicsExtractor guiGraphics, int mouseX, int mouseY, float partialTick) {
+        super.extractRenderState(guiGraphics, mouseX, mouseY, partialTick);
 
         if (zoom.get() < zoom.getMin() + 0.1f && zoom.getTarget() < zoom.getMin() + 0.1f) {
             Minecrft.get().setScreen(lightroomScreen);
@@ -41,10 +42,10 @@ public class LightroomFrameInspectScreen extends FilmFrameInspectScreen {
     }
 
     @Override
-    public boolean mouseClicked(double mouseX, double mouseY, int button) {
-        if (super.mouseClicked(mouseX, mouseY, button)) return true;
+    public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
+        if (super.mouseClicked(event, doubleClick)) return true;
 
-        if (button == InputConstants.MOUSE_BUTTON_RIGHT) {
+        if (event.button() == InputConstants.MOUSE_BUTTON_RIGHT) {
             zoom.setTarget(0f);
             return true;
         }

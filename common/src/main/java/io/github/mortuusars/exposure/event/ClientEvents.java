@@ -1,6 +1,5 @@
 package io.github.mortuusars.exposure.event;
 
-import com.mojang.blaze3d.vertex.PoseStack;
 import io.github.mortuusars.exposure.Config;
 import io.github.mortuusars.exposure.Exposure;
 import io.github.mortuusars.exposure.ExposureClient;
@@ -8,23 +7,22 @@ import io.github.mortuusars.exposure.client.animation.EasingFunction;
 import io.github.mortuusars.exposure.client.camera.CameraClient;
 import io.github.mortuusars.exposure.client.camera.viewfinder.ViewfinderRegistry;
 import io.github.mortuusars.exposure.client.capture.template.CameraCaptureTemplate;
+import io.github.mortuusars.exposure.client.capture.Capture;
 import io.github.mortuusars.exposure.client.capture.template.CaptureTemplates;
 import io.github.mortuusars.exposure.client.capture.template.PreloadingDummyCaptureTemplate;
-import io.github.mortuusars.exposure.client.render.ItemFramePhotographRenderer;
 import io.github.mortuusars.exposure.client.util.Minecrft;
 import io.github.mortuusars.exposure.network.packet.Packet;
 import io.github.mortuusars.exposure.world.camera.Camera;
 import io.github.mortuusars.exposure.world.camera.CameraId;
 import io.github.mortuusars.exposure.world.camera.capture.CaptureParameters;
-import io.github.mortuusars.exposure.world.item.PhotographItem;
 import io.github.mortuusars.exposure.network.handler.ClientPacketsHandler;
 import io.github.mortuusars.exposure.client.sound.UniqueSoundManager;
-import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.world.entity.decoration.ItemFrame;
 import net.minecraft.world.item.ItemStack;
 
 public class ClientEvents {
     public static void levelUnloaded() {
+        Capture.cancelAll();
+        CameraClient.resetClientState();
     }
 
     public static void login() {
@@ -56,6 +54,8 @@ public class ClientEvents {
     }
 
     public static void disconnect() {
+        Capture.cancelAll();
+        CameraClient.resetClientState();
         resetRenderData();
     }
 
@@ -65,20 +65,8 @@ public class ClientEvents {
         ExposureClient.imageRenderer().clearCache();
     }
 
-    public static boolean renderItemFrameItem(ItemFrame itemFrame, PoseStack poseStack, MultiBufferSource buffer, int packedLight) {
-        if (!Config.Client.PHOTOGRAPH_RENDERS_IN_ITEM_FRAME.get()) return false;
-        if (!(itemFrame.getItem().getItem() instanceof PhotographItem photographItem)) return false;
-        if (photographItem.getFrame(itemFrame.getItem()).identifier().isEmpty()) return false;
-
-        poseStack.pushPose();
-        poseStack.scale(2F, 2F, 2F);
-        ItemFramePhotographRenderer.render(itemFrame, poseStack, buffer, packedLight, photographItem, itemFrame.getItem());
-        poseStack.popPose();
-
-        return true;
-    }
-
     public static void resourcesReloaded() {
+        Capture.cancelAll();
         ExposureClient.exposureStore().clear();
         ExposureClient.renderedExposures().clearCache();
         ExposureClient.imageRenderer().clearCache();

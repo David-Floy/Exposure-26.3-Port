@@ -5,7 +5,7 @@ import io.github.mortuusars.exposure.world.camera.CameraId;
 import io.github.mortuusars.exposure.world.camera.component.ShutterSpeed;
 import io.github.mortuusars.exposure.world.entity.CameraHolder;
 import net.minecraft.client.CameraType;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.Entity;
 import org.jetbrains.annotations.Nullable;
 
@@ -36,6 +36,11 @@ public interface CaptureAction {
     default void afterCapture() {
     }
 
+    /** Failure/cancellation restore hook. Composite actions use it to unwind in reverse order. */
+    default void afterCaptureFailure() {
+        afterCapture();
+    }
+
     // --
 
     CaptureAction EMPTY = new CaptureAction() {};
@@ -57,7 +62,7 @@ public interface CaptureAction {
         return new DisablePostEffectAction();
     }
 
-    static CaptureAction setPostEffect(ResourceLocation postEffect) {
+    static CaptureAction setPostEffect(Identifier postEffect) {
         return new SetPostEffectAction(postEffect);
     }
 
@@ -81,7 +86,7 @@ public interface CaptureAction {
         return new SetFovAction(fov);
     }
 
-    static CaptureAction setFilter(Optional<ResourceLocation> filter) {
+    static CaptureAction setFilter(Optional<Identifier> filter) {
         return new SetFilterAction(filter);
     }
 

@@ -7,7 +7,8 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.LevelAccessor;
+import net.minecraft.world.level.LevelReader;
+import net.minecraft.world.level.ScheduledTickAccess;
 import net.minecraft.world.level.block.*;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
@@ -36,7 +37,7 @@ public class FlashBlock extends Block implements /*EntityBlock,*/ SimpleWaterlog
     }
 
     @Override
-    public boolean propagatesSkylightDown(@NotNull BlockState blockState, @NotNull BlockGetter level, @NotNull BlockPos pos) {
+    protected boolean propagatesSkylightDown(@NotNull BlockState blockState) {
         return true;
     }
 
@@ -56,12 +57,15 @@ public class FlashBlock extends Block implements /*EntityBlock,*/ SimpleWaterlog
     }
 
     @Override
-    public @NotNull BlockState updateShape(BlockState pState, @NotNull Direction pDirection, @NotNull BlockState pNeighborState, @NotNull LevelAccessor pLevel, @NotNull BlockPos pCurrentPos, @NotNull BlockPos pNeighborPos) {
+    protected @NotNull BlockState updateShape(BlockState pState, @NotNull LevelReader pLevel,
+                                              @NotNull ScheduledTickAccess tickAccess, @NotNull BlockPos pCurrentPos,
+                                              @NotNull Direction pDirection, @NotNull BlockPos pNeighborPos,
+                                              @NotNull BlockState pNeighborState, @NotNull RandomSource random) {
         if (pState.getValue(WATERLOGGED)) {
-            pLevel.scheduleTick(pCurrentPos, Fluids.WATER, Fluids.WATER.getTickDelay(pLevel));
+            tickAccess.scheduleTick(pCurrentPos, Fluids.WATER, Fluids.WATER.getTickDelay(pLevel));
         }
 
-        return super.updateShape(pState, pDirection, pNeighborState, pLevel, pCurrentPos, pNeighborPos);
+        return super.updateShape(pState, pLevel, tickAccess, pCurrentPos, pDirection, pNeighborPos, pNeighborState, random);
     }
 
     public @NotNull FluidState getFluidState(BlockState pState) {

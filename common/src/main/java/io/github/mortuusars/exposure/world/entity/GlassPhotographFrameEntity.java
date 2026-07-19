@@ -27,6 +27,8 @@ public class GlassPhotographFrameEntity extends PhotographFrameEntity {
 
     @Override
     public boolean isFrameInvisible() {
-        return super.isFrameInvisible() || !getItem().isEmpty();
+        // An occupied glass frame still needs its dedicated glass block model. Treating every
+        // non-empty frame as invisible makes the renderer submit only a full-size photograph quad.
+        return super.isFrameInvisible();
     }
 }

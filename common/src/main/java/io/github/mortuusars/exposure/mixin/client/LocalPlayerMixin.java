@@ -4,8 +4,8 @@ import com.mojang.authlib.GameProfile;
 import io.github.mortuusars.exposure.client.camera.CameraClient;
 import io.github.mortuusars.exposure.world.camera.Camera;
 import io.github.mortuusars.exposure.world.camera.CameraOnStand;
+import io.github.mortuusars.exposure.world.item.camera.CameraItem;
 import net.minecraft.client.player.LocalPlayer;
-import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import org.spongepowered.asm.mixin.Mixin;
@@ -17,8 +17,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @SuppressWarnings("AddedMixinMembersNamePattern")
 @Mixin(LocalPlayer.class)
 public abstract class LocalPlayerMixin extends Player {
-    public LocalPlayerMixin(Level level, BlockPos pos, float yRot, GameProfile gameProfile) {
-        super(level, pos, yRot, gameProfile);
+    public LocalPlayerMixin(Level level, GameProfile gameProfile) {
+        super(level, gameProfile);
     }
 
     @Override
@@ -36,6 +36,13 @@ public abstract class LocalPlayerMixin extends Player {
     @Inject(method = "tick", at = @At("RETURN"))
     private void onTick(CallbackInfo ci) {
         CameraClient.tick();
+
+        for (int slot = 0; slot < getInventory().getContainerSize(); slot++) {
+            var stack = getInventory().getItem(slot);
+            if (stack.getItem() instanceof CameraItem cameraItem) {
+                cameraItem.clientInventoryTick(stack, this);
+            }
+        }
 
         getActiveExposureCameraOptional().ifPresent(camera -> {
             if (!camera.isActive()) {

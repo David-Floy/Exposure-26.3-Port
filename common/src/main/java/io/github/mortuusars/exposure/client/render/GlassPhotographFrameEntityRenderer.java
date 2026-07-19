@@ -2,19 +2,17 @@ package io.github.mortuusars.exposure.client.render;
 
 import io.github.mortuusars.exposure.ExposureClient;
 import io.github.mortuusars.exposure.world.entity.GlassPhotographFrameEntity;
-import net.minecraft.client.renderer.RenderType;
-import net.minecraft.client.renderer.Sheets;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
-import net.minecraft.client.resources.model.ModelResourceLocation;
-import org.jetbrains.annotations.NotNull;
+import net.minecraft.client.renderer.rendertype.RenderType;
+import net.minecraft.client.renderer.rendertype.RenderTypes;
+import net.minecraft.resources.Identifier;
 
+/** Glass frame keeps a cutout block-model pass; the photo remains translucent and is submitted first. */
 public class GlassPhotographFrameEntityRenderer extends PhotographFrameEntityRenderer<GlassPhotographFrameEntity> {
-    public GlassPhotographFrameEntityRenderer(EntityRendererProvider.Context context) {
-        super(context);
-    }
+    public GlassPhotographFrameEntityRenderer(EntityRendererProvider.Context context) { super(context); }
 
     @Override
-    public ModelResourceLocation getModelLocation(GlassPhotographFrameEntity entity, int size) {
+    public Identifier getModelLocation(GlassPhotographFrameEntity entity, int size) {
         return switch (size) {
             case 0 -> ExposureClient.Models.CLEAR_PHOTOGRAPH_FRAME_SMALL;
             case 1 -> ExposureClient.Models.CLEAR_PHOTOGRAPH_FRAME_MEDIUM;
@@ -24,7 +22,5 @@ public class GlassPhotographFrameEntityRenderer extends PhotographFrameEntityRen
     }
 
     @Override
-    protected @NotNull RenderType getRenderType() {
-        return Sheets.cutoutBlockSheet();
-    }
+    protected RenderType getRenderType() { return RenderTypes.cutoutMovingBlock(); }
 }

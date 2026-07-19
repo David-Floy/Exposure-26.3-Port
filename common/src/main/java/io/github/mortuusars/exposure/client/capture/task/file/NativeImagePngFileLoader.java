@@ -23,6 +23,7 @@ public class NativeImagePngFileLoader implements ImageFileLoader {
 
             if (image.getWidth() > 10_000 || image.getHeight() > 10_000) {
                 LOGGER.error("Cannot load image from file '{}': image is too large.", file);
+                image.close();
                 return Result.error(FileCaptureTask.ERROR_CANNOT_READ);
             }
 

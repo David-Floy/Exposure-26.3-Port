@@ -1,0 +1,77 @@
+{
+  "targets": {
+    "swap": {
+      "persistent": true
+    }
+  },
+  "passes": [
+    {
+      "vertex_shader": "minecraft:core/screenquad",
+      "fragment_shader": "minecraft:program/exposure_color_processor",
+      "inputs": [
+        {
+          "sampler_name": "Diffuse",
+          "target": "minecraft:main"
+        }
+      ],
+      "output": "swap",
+      "uniforms": {
+        "ColorConfig": [
+          {
+            "name": "Mul",
+            "type": "vec3",
+            "value": [
+              1,
+              0.2,
+              0.25
+            ]
+          },
+          {
+            "name": "Add",
+            "type": "vec3",
+            "value": [
+              0.02,
+              0.01,
+              0.01
+            ]
+          },
+          {
+            "name": "Saturation",
+            "type": "float",
+            "value": 1.1
+          },
+          {
+            "name": "Contrast",
+            "type": "float",
+            "value": 0.98
+          }
+        ]
+      }
+    },
+    {
+      "vertex_shader": "minecraft:core/screenquad",
+      "fragment_shader": "minecraft:post/blit",
+      "inputs": [
+        {
+          "sampler_name": "In",
+          "target": "swap"
+        }
+      ],
+      "uniforms": {
+        "BlitConfig": [
+          {
+            "name": "ColorModulate",
+            "type": "vec4",
+            "value": [
+              1,
+              1,
+              1,
+              1
+            ]
+          }
+        ]
+      },
+      "output": "minecraft:main"
+    }
+  ]
+}

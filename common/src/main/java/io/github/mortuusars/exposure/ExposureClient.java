@@ -8,6 +8,7 @@ import io.github.mortuusars.exposure.client.RenderedExposures;
 import io.github.mortuusars.exposure.client.camera.viewfinder.*;
 import io.github.mortuusars.exposure.client.image.modifier.ImageEffect;
 import io.github.mortuusars.exposure.client.render.image.ImageRenderer;
+import io.github.mortuusars.exposure.client.render.model.ExposureItemModelProperties;
 import io.github.mortuusars.exposure.client.render.photograph.PhotographStyle;
 import io.github.mortuusars.exposure.client.render.photograph.PhotographRenderer;
 import io.github.mortuusars.exposure.client.render.photograph.PhotographStyles;
@@ -21,12 +22,10 @@ import io.github.mortuusars.exposure.world.item.AlbumItem;
 import io.github.mortuusars.exposure.world.item.camera.CameraItem;
 import io.github.mortuusars.exposure.world.item.ChromaticSheetItem;
 import io.github.mortuusars.exposure.world.item.StackedPhotographsItem;
-import net.minecraft.client.renderer.item.ItemProperties;
-import net.minecraft.client.resources.model.ModelResourceLocation;
 import net.minecraft.core.component.DataComponents;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Set;
 
 public class ExposureClient {
@@ -56,7 +55,7 @@ public class ExposureClient {
 
         cycles().addParallelTask(new ClearStaleRenderedImagesIndefiniteTask());
 
-        registerItemModelProperties();
+        ExposureItemModelProperties.register();
     }
 
     public static Cycles cycles() {
@@ -94,80 +93,36 @@ public class ExposureClient {
 
     // --
 
-    private static void registerItemModelProperties() {
-        ItemProperties.register(Exposure.Items.CAMERA.get(), Exposure.resource("camera_gold"), (stack, level, entity, seed) ->
-                stack.getOrDefault(Exposure.DataComponents.CAMERA_GOLD, false) ? 1 : 0);
-
-        ItemProperties.register(Exposure.Items.CAMERA.get(), Exposure.resource("camera_active"), (stack, level, entity, seed) ->
-                stack.getItem() instanceof CameraItem cameraItem && cameraItem.isActive(stack) ? 1 : 0);
-
-        ItemProperties.register(Exposure.Items.CAMERA.get(), Exposure.resource("camera_selfie"), (stack, level, entity, seed) ->
-                stack.getItem() instanceof CameraItem cameraItem && cameraItem.isInSelfieMode(stack)
-                        ? entity == Minecrft.get().getCameraEntity() ? 0.5f : 1f
-                        : 0);
-
-        ItemProperties.register(Exposure.Items.CAMERA.get(), Exposure.resource("camera_has_lens"), (stack, level, entity, seed) ->
-                !Attachment.LENS.get(stack).isEmpty() ? 1 : 0);
-
-        ItemProperties.register(Exposure.Items.CAMERA.get(), Exposure.resource("camera_has_flash"), (stack, level, entity, seed) ->
-                !Attachment.FLASH.get(stack).isEmpty() ? 1 : 0);
-
-        ItemProperties.register(Exposure.Items.CHROMATIC_SHEET.get(), Exposure.resource("channels"), (stack, clientLevel, livingEntity, seed) ->
-                stack.getItem() instanceof ChromaticSheetItem chromaticSheet ?
-                        chromaticSheet.getLayers(stack).size() / 10f : 0f);
-
-        ItemProperties.register(Exposure.Items.STACKED_PHOTOGRAPHS.get(), Exposure.resource("count"),
-                (stack, clientLevel, livingEntity, seed) ->
-                        stack.getItem() instanceof StackedPhotographsItem stackedPhotographsItem ?
-                                stackedPhotographsItem.getPhotographs(stack).size() / 100f : 0f);
-
-        ItemProperties.register(Exposure.Items.ALBUM.get(), Exposure.resource("photos"),
-                (stack, clientLevel, livingEntity, seed) ->
-                        stack.getItem() instanceof AlbumItem albumItem ? albumItem.getPhotographsCount(stack) / 100f : 0f);
-
-        ItemProperties.register(Exposure.Items.INTERPLANAR_PROJECTOR.get(), Exposure.resource("projector_active"),
-                (stack, clientLevel, livingEntity, seed) -> Config.Server.CAN_PROJECT.get() && stack.has(DataComponents.CUSTOM_NAME) ? 1f : 0f);
-    }
-
     public static class Models {
-        public static final Set<ModelResourceLocation> MODELS = new HashSet<>();
+        public static final Set<Identifier> MODELS = new LinkedHashSet<>();
 
-        public static final ModelResourceLocation CAMERA_GUI = register("item/camera_gui");
-        public static final ModelResourceLocation CAMERA_ACTIVE = register("item/camera_active");
-        public static final ModelResourceLocation CAMERA_SELFIE = register("item/camera_selfie");
-        public static final ModelResourceLocation CAMERA_VIEWFINDER = register("item/camera_parts/viewfinder");
-        public static final ModelResourceLocation CAMERA_FLASH = register("item/camera_parts/flash");
-        public static final ModelResourceLocation CAMERA_LENS = register("item/camera_parts/lens");
-        public static final ModelResourceLocation CAMERA_SELFIE_STICK = register("item/camera_parts/selfie_stick");
-        public static final ModelResourceLocation SELFIE_STICK = register("item/selfie_stick");
+        public static final Identifier PHOTOGRAPH_FRAME_SMALL = register("block/photograph_frame_small");
+        public static final Identifier PHOTOGRAPH_FRAME_MEDIUM = register("block/photograph_frame_medium");
+        public static final Identifier PHOTOGRAPH_FRAME_LARGE = register("block/photograph_frame_large");
+        public static final Identifier CLEAR_PHOTOGRAPH_FRAME_SMALL = register("block/glass_photograph_frame_small");
+        public static final Identifier CLEAR_PHOTOGRAPH_FRAME_MEDIUM = register("block/glass_photograph_frame_medium");
+        public static final Identifier CLEAR_PHOTOGRAPH_FRAME_LARGE = register("block/glass_photograph_frame_large");
+        public static final Identifier CAMERA_STAND = register("block/camera_stand");
+        public static final Identifier CAMERA_STAND_MOUNT = register("block/camera_stand_mount");
 
-        public static final ModelResourceLocation PHOTOGRAPH_FRAME_SMALL = register("block/photograph_frame_small");
-        public static final ModelResourceLocation PHOTOGRAPH_FRAME_MEDIUM = register("block/photograph_frame_medium");
-        public static final ModelResourceLocation PHOTOGRAPH_FRAME_LARGE = register("block/photograph_frame_large");
-        public static final ModelResourceLocation CLEAR_PHOTOGRAPH_FRAME_SMALL = register("block/glass_photograph_frame_small");
-        public static final ModelResourceLocation CLEAR_PHOTOGRAPH_FRAME_MEDIUM = register("block/glass_photograph_frame_medium");
-        public static final ModelResourceLocation CLEAR_PHOTOGRAPH_FRAME_LARGE = register("block/glass_photograph_frame_large");
-        public static final ModelResourceLocation CAMERA_STAND = register("block/camera_stand");
-        public static final ModelResourceLocation CAMERA_STAND_MOUNT = register("block/camera_stand_mount");
-
-        public static ModelResourceLocation register(String path) {
-            ModelResourceLocation location = new ModelResourceLocation(Exposure.resource(path), "standalone");
+        public static Identifier register(String path) {
+            Identifier location = Exposure.resource(path);
             MODELS.add(location);
             return location;
         }
     }
 
     public static class Textures {
-        public static final ResourceLocation EMPTY = Exposure.resource("textures/empty.png");
+        public static final Identifier EMPTY = Exposure.resource("textures/empty.png");
 
         public static class Photograph {
-            public static final ResourceLocation REGULAR_PAPER = Exposure.resource("textures/photograph/photograph.png");
-            public static final ResourceLocation REGULAR_ALBUM_PAPER = Exposure.resource("textures/photograph/photograph_album.png");
+            public static final Identifier REGULAR_PAPER = Exposure.resource("textures/photograph/photograph.png");
+            public static final Identifier REGULAR_ALBUM_PAPER = Exposure.resource("textures/photograph/photograph_album.png");
 
-            public static final ResourceLocation AGED_PAPER = Exposure.resource("textures/photograph/aged_photograph.png");
-            public static final ResourceLocation AGED_OVERLAY = Exposure.resource("textures/photograph/aged_photograph_overlay.png");
-            public static final ResourceLocation AGED_ALBUM_PAPER = Exposure.resource("textures/photograph/aged_photograph_album.png");
-            public static final ResourceLocation AGED_ALBUM_OVERLAY = Exposure.resource("textures/photograph/aged_photograph_album_overlay.png");
+            public static final Identifier AGED_PAPER = Exposure.resource("textures/photograph/aged_photograph.png");
+            public static final Identifier AGED_OVERLAY = Exposure.resource("textures/photograph/aged_photograph_overlay.png");
+            public static final Identifier AGED_ALBUM_PAPER = Exposure.resource("textures/photograph/aged_photograph_album.png");
+            public static final Identifier AGED_ALBUM_OVERLAY = Exposure.resource("textures/photograph/aged_photograph_album_overlay.png");
         }
     }
 }

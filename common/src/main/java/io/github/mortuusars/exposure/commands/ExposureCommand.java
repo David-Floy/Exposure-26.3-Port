@@ -8,7 +8,8 @@ import net.minecraft.commands.Commands;
 public class ExposureCommand {
     public static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
         dispatcher.register(Commands.literal("exposure")
-                .requires((stack) -> stack.hasPermission(2))
+                .requires(stack -> stack.permissions().hasPermission(
+                        net.minecraft.server.permissions.Permissions.COMMANDS_GAMEMASTER))
                 .then(LoadCommand.get())
                 .then(ExposeCommand.get())
                 .then(ExportCommand.get())

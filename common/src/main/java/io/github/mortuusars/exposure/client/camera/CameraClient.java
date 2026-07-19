@@ -2,12 +2,14 @@ package io.github.mortuusars.exposure.client.camera;
 
 import io.github.mortuusars.exposure.client.camera.viewfinder.Viewfinder;
 import io.github.mortuusars.exposure.client.camera.viewfinder.ViewfinderRegistry;
+import io.github.mortuusars.exposure.client.render.FovModifier;
 import io.github.mortuusars.exposure.client.util.Minecrft;
 import io.github.mortuusars.exposure.world.camera.Camera;
 import io.github.mortuusars.exposure.network.Packets;
 import io.github.mortuusars.exposure.network.packet.common.ActiveCameraDeactivateCommonPacket;
 import io.github.mortuusars.exposure.world.camera.CameraOnStand;
 import net.minecraft.client.CameraType;
+import net.minecraft.client.Minecraft;
 import net.minecraft.world.entity.Entity;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -19,6 +21,15 @@ public class CameraClient {
 
     public static void tick() {
         if (activeViewfinder != null) {
+            Minecraft minecraft = Minecrft.get();
+            if (minecraft.player == null || minecraft.level == null) {
+                resetClientState();
+                return;
+            }
+            if (!minecraft.player.isAlive() || !activeViewfinder.camera().isActive()) {
+                deactivate();
+                return;
+            }
             activeViewfinder.tick();
         }
     }
@@ -40,13 +51,13 @@ public class CameraClient {
     }
 
     public static void setCameraEntity(Entity entity) {
-        // Not using Minecraft#setCameraEntity because it updates postEffect
-        Minecrft.get().cameraEntity = entity;
+        // Do not use Minecraft#setCameraEntity: it also changes the entity post effect.
+        // Camera owns the render entity directly in 26.1.2.
+        Minecrft.get().gameRenderer.getMainCamera().setEntity(entity);
 
         // Set eye height to final value to skip transition animation
         Minecrft.get().gameRenderer.getMainCamera().eyeHeight = entity.getEyeHeight();
         Minecrft.get().gameRenderer.getMainCamera().eyeHeightOld = entity.getEyeHeight();
-        Minecrft.get().gameRenderer.getMainCamera().reset();
     }
 
     public static void resetCameraEntity() {
@@ -72,6 +83,17 @@ public class CameraClient {
         if (activeViewfinder != null) {
             activeViewfinder.close();
             activeViewfinder = null;
+        }
+    }
+
+    /** Clears client-only camera state without sending packets during a world transition. */
+    public static void resetClientState() {
+        removeViewfinder();
+        FovModifier.reset();
+
+        Minecraft minecraft = Minecrft.get();
+        if (minecraft.player != null) {
+            setCameraEntity(minecraft.player);
         }
     }
 }

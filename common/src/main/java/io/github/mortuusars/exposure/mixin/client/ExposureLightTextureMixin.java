@@ -1,17 +1,19 @@
 package io.github.mortuusars.exposure.mixin.client;
 
 import io.github.mortuusars.exposure.client.render.GammaModifier;
-import net.minecraft.client.renderer.LightTexture;
-import net.minecraft.world.level.dimension.DimensionType;
+import net.minecraft.client.renderer.LightmapRenderStateExtractor;
+import net.minecraft.client.renderer.state.LightmapRenderState;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-@Mixin(LightTexture.class)
+@Mixin(LightmapRenderStateExtractor.class)
 public abstract class ExposureLightTextureMixin {
-    @Inject(method = "getBrightness", at = @At(value = "RETURN"), cancellable = true)
-    private static void modifyBrightness(DimensionType pDimensionType, int pLightLevel, CallbackInfoReturnable<Float> cir) {
-        cir.setReturnValue(GammaModifier.getModifiedValue(cir.getReturnValue()));
+    @Inject(method = "extract", at = @At("RETURN"))
+    private void exposure$modifyBrightness(LightmapRenderState state, float partialTick, CallbackInfo ci) {
+        if (state.needsUpdate) {
+            state.brightness = GammaModifier.getModifiedValue(state.brightness);
+        }
     }
 }

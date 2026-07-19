@@ -20,23 +20,22 @@
     ],
     "client": [
       "io.github.mortuusars.exposure.fabric.ExposureFabricClient"
-    ],
-    "jei_mod_plugin": [
-      "io.github.mortuusars.exposure.integration.jei.ExposureJeiPlugin"
-    ],
-    "jade": [
-      "io.github.mortuusars.exposure.integration.jade.ExposureJadePlugin"
     ]
   },
+  "accessWidener": "exposure.accesswidener",
   "mixins": [
     "exposure.mixins.json",
     "exposure-common.mixins.json"
   ],
   "depends": {
-    "fabricloader": ">=0.16.0",
-    "minecraft": "~1.21",
-    "java": ">=21",
-    "fabric-api": "*",
-    "forgeconfigapiport": ">=21.0.0"
+    "fabricloader": ">=${fabric_loader_version}",
+    "minecraft": "~${minecraft_version}",
+    "java": ">=25",
+    "fabric-api": ">=${fabric_api_version}",
+    "forgeconfigapiport": ">=${forge_config_api_port_version}"
+  },
+  "suggests": {
+    "jei": "*",
+    "jade": "*"
   }
 }

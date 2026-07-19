@@ -1,6 +1,5 @@
 package io.github.mortuusars.exposure;
 
-import dev.architectury.injectables.annotations.ExpectPlatform;
 import io.github.mortuusars.exposure.util.ExtraData;
 import io.github.mortuusars.exposure.world.camera.capture.CaptureParameters;
 import io.github.mortuusars.exposure.world.camera.frame.Frame;
@@ -20,73 +19,95 @@ import java.util.List;
 import java.util.function.Consumer;
 
 public class PlatformHelper {
-    @ExpectPlatform
+    private static volatile Service service;
+
+    public static void bind(Service implementation) {
+        if (service != null) {
+            throw new IllegalStateException("Exposure platform service is already bound.");
+        }
+        service = java.util.Objects.requireNonNull(implementation, "implementation");
+    }
+
+    private static Service service() {
+        Service implementation = service;
+        if (implementation == null) {
+            throw new IllegalStateException("Exposure platform service has not been bound by the Fabric entrypoint.");
+        }
+        return implementation;
+    }
+
     public static @Nullable MinecraftServer getServer() {
-        throw new AssertionError();
+        return service().getServer();
     }
 
-    @ExpectPlatform
     public static boolean canShear(ItemStack stack) {
-        throw new AssertionError();
+        return service().canShear(stack);
     }
 
-    @ExpectPlatform
     public static boolean canStrip(ItemStack stack) {
-        throw new AssertionError();
+        return service().canStrip(stack);
     }
 
-    @ExpectPlatform
     public static void openMenu(ServerPlayer serverPlayer, MenuProvider menuProvider, Consumer<RegistryFriendlyByteBuf> extraDataWriter) {
-        throw new AssertionError();
+        service().openMenu(serverPlayer, menuProvider, extraDataWriter);
     }
 
-    @ExpectPlatform
     public static List<String> getDefaultSpoutDevelopmentColorSequence() {
-        throw new AssertionError();
+        return service().getDefaultSpoutDevelopmentColorSequence();
     }
 
-    @ExpectPlatform
     public static List<String> getDefaultSpoutDevelopmentBWSequence() {
-        throw new AssertionError();
+        return service().getDefaultSpoutDevelopmentBWSequence();
     }
 
     @SuppressWarnings("BooleanMethodIsAlwaysInverted")
-    @ExpectPlatform
     public static boolean isModLoaded(String modId) {
-        throw new AssertionError();
+        return service().isModLoaded(modId);
     }
 
-    @ExpectPlatform
     public static boolean isModLoading(String modId) {
-        throw new AssertionError();
+        return service().isModLoading(modId);
     }
 
-    @ExpectPlatform
     public static boolean isInDevEnv() {
-        throw new AssertionError();
+        return service().isInDevEnv();
     }
 
     // --
 
-    @ExpectPlatform
     public static void postModifyEntityInFrameExtraDataEvent(CameraHolder cameraHolder, ItemStack camera, LivingEntity entityInFrame, ExtraData data) {
-        throw new AssertionError();
+        service().postModifyEntityInFrameExtraDataEvent(cameraHolder, camera, entityInFrame, data);
     }
 
-    @ExpectPlatform
     public static void postModifyFrameExtraDataEvent(CameraHolder cameraHolder, ItemStack camera, CaptureParameters captureParameters,
                                                      List<BlockPos> positionsInFrame, List<LivingEntity> entitiesInFrame, ExtraData data) {
-        throw new AssertionError();
+        service().postModifyFrameExtraDataEvent(cameraHolder, camera, captureParameters, positionsInFrame, entitiesInFrame, data);
     }
 
-    @ExpectPlatform
     public static void postFrameAddedEvent(CameraHolder holder, ItemStack camera, Frame frame,
                                            List<BlockPos> positionsInFrame, List<LivingEntity> entitiesInFrame) {
-        throw new AssertionError();
+        service().postFrameAddedEvent(holder, camera, frame, positionsInFrame, entitiesInFrame);
     }
 
-    @ExpectPlatform
     public static boolean isCreateDeployer(Player player, InteractionHand hand) {
-        throw new AssertionError();
+        return service().isCreateDeployer(player, hand);
+    }
+
+    public interface Service {
+        @Nullable MinecraftServer getServer();
+        boolean canShear(ItemStack stack);
+        boolean canStrip(ItemStack stack);
+        void openMenu(ServerPlayer serverPlayer, MenuProvider menuProvider, Consumer<RegistryFriendlyByteBuf> extraDataWriter);
+        List<String> getDefaultSpoutDevelopmentColorSequence();
+        List<String> getDefaultSpoutDevelopmentBWSequence();
+        boolean isModLoaded(String modId);
+        boolean isModLoading(String modId);
+        boolean isInDevEnv();
+        void postModifyEntityInFrameExtraDataEvent(CameraHolder cameraHolder, ItemStack camera, LivingEntity entityInFrame, ExtraData data);
+        void postModifyFrameExtraDataEvent(CameraHolder cameraHolder, ItemStack camera, CaptureParameters captureParameters,
+                                           List<BlockPos> positionsInFrame, List<LivingEntity> entitiesInFrame, ExtraData data);
+        void postFrameAddedEvent(CameraHolder holder, ItemStack camera, Frame frame,
+                                 List<BlockPos> positionsInFrame, List<LivingEntity> entitiesInFrame);
+        boolean isCreateDeployer(Player player, InteractionHand hand);
     }
 }

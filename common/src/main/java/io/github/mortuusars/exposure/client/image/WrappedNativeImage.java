@@ -1,10 +1,10 @@
 package io.github.mortuusars.exposure.client.image;
 
 import com.mojang.blaze3d.platform.NativeImage;
-import io.github.mortuusars.exposure.util.color.Color;
 
 public class WrappedNativeImage implements Image {
     private final NativeImage nativeImage;
+    private boolean closed;
 
     public WrappedNativeImage(NativeImage nativeImage) {
         this.nativeImage = nativeImage;
@@ -22,11 +22,16 @@ public class WrappedNativeImage implements Image {
 
     @Override
     public int getPixelARGB(int x, int y) {
-        return Color.ABGRtoARGB(nativeImage.getPixelRGBA(x, y));
+        // Since 26.1.2 NativeImage#getPixel converts its internal ABGR storage to ARGB.
+        // The fixed 1.21.1 upstream conversion must therefore not be applied a second time.
+        return nativeImage.getPixel(x, y);
     }
 
     @Override
     public void close() {
-        nativeImage.close();
+        if (!closed) {
+            closed = true;
+            nativeImage.close();
+        }
     }
 }

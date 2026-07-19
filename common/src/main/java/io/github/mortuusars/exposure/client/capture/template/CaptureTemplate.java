@@ -18,7 +18,7 @@ import io.github.mortuusars.exposure.util.TranslatableError;
 import io.github.mortuusars.exposure.util.UnixTimestamp;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.Holder;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.function.Consumer;
@@ -50,7 +50,7 @@ public interface CaptureTemplate {
     }
 
     default Function<PalettedImage, ExposureData> convertToExposureData(Holder<ColorPalette> palette, ExposureData.Tag tag) {
-        ResourceLocation paletteId = palette.unwrapKey().orElseThrow().location();
+        Identifier paletteId = palette.unwrapKey().orElseThrow().identifier();
         return image -> new ExposureData(image.width(), image.height(), image.pixels(), paletteId, tag);
     }
 
@@ -61,8 +61,8 @@ public interface CaptureTemplate {
 
     default @NotNull Consumer<TranslatableError> printCasualErrorInChat() {
         return err -> {
-            Minecrft.execute(() -> Minecrft.player().displayClientMessage(
-                    err.casual().withStyle(ChatFormatting.RED), false));
+            Minecrft.execute(() -> Minecrft.player().sendSystemMessage(
+                    err.casual().withStyle(ChatFormatting.RED)));
             Exposure.LOGGER.error(err.technical().getString());
         };
     }

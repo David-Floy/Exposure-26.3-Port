@@ -16,9 +16,11 @@ public class BrokenInterplanarProjectorItem extends Item {
     }
 
     @Override
-    public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltipComponents, TooltipFlag tooltipFlag) {
+    public void appendHoverText(ItemStack stack, TooltipContext context,
+                                net.minecraft.world.item.component.TooltipDisplay tooltipDisplay,
+                                java.util.function.Consumer<Component> tooltipConsumer, TooltipFlag tooltipFlag) {
         if (stack.has(DataComponents.CUSTOM_NAME)) {
-            tooltipComponents.add(Component.translatable("item.exposure.broken_interplanar_projector.tooltip.broken").withStyle(ChatFormatting.DARK_RED));
+            tooltipConsumer.accept(Component.translatable("item.exposure.broken_interplanar_projector.tooltip.broken").withStyle(ChatFormatting.DARK_RED));
         }
     }
 

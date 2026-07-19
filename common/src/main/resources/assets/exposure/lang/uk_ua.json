@@ -29,6 +29,7 @@
   "advancement.exposure.wildlife_archivist.title": "Документаліст дикої природи",
   "block.exposure.lightroom": "Лайтрум",
   "category.exposure": "Exposure",
+  "key.category.exposure.main": "Exposure",
   "command.exposure.debug.chromatic_from_last_three.fail.error": "Неможливо створити барвисту експозицію: %s",
   "command.exposure.debug.chromatic_from_last_three.fail.not_enough_frames": "Недостатньо кадрів. Для барвистої експозиції потрібно 3.",
   "command.exposure.debug.chromatic_from_last_three.success.created": "Створено барвисту експозицію: ",
