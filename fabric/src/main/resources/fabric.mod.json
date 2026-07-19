@@ -9,7 +9,8 @@
   ],
   "contact": {
     "homepage": "${mod_page}",
-    "sources": "${mod_github}"
+    "sources": "${mod_github}",
+    "issues": "${mod_issues}"
   },
   "license": "${mod_license}",
   "icon": "icon.png",

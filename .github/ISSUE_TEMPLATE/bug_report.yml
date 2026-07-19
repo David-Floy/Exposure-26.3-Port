@@ -1,0 +1,101 @@
+name: Bug report
+description: Report a reproducible problem in the unofficial Minecraft 26.1.2 Fabric port.
+title: "[Bug]: "
+labels:
+  - bug
+body:
+  - type: markdown
+    attributes:
+      value: |
+        This repository is an unofficial port. Do not report port-specific issues to the official Exposure tracker. Remove credentials or private server addresses from attachments.
+
+  - type: input
+    id: minecraft
+    attributes:
+      label: Minecraft version
+      placeholder: 26.1.2
+    validations:
+      required: true
+
+  - type: input
+    id: port
+    attributes:
+      label: Exposure port version
+      placeholder: 1.9.18-port.1+mc26.1.2
+    validations:
+      required: true
+
+  - type: input
+    id: fabric
+    attributes:
+      label: Fabric Loader and Fabric API
+      placeholder: Fabric Loader 0.19.3; Fabric API 0.150.0+26.1.2
+    validations:
+      required: true
+
+  - type: textarea
+    id: mods
+    attributes:
+      label: Complete mod list
+      description: Include exact versions. A launcher-exported list is preferred.
+    validations:
+      required: true
+
+  - type: input
+    id: shaders
+    attributes:
+      label: Shader, Iris, and Sodium versions
+      description: Write “none” when shaders/rendering mods are not installed.
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Reproduction steps
+      description: Provide a minimal numbered sequence, expected result, and actual result.
+    validations:
+      required: true
+
+  - type: dropdown
+    id: minimal
+    attributes:
+      label: Does it reproduce in a minimal environment?
+      options:
+        - "Yes"
+        - "No"
+        - "Not tested"
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: latest.log and debug.log
+      description: Attach both complete files. Do not paste only the final exception lines.
+    validations:
+      required: true
+
+  - type: textarea
+    id: crash
+    attributes:
+      label: Crash report
+      description: Attach the complete crash report, or state that no crash report was created.
+    validations:
+      required: true
+
+  - type: textarea
+    id: visual
+    attributes:
+      label: Screenshots or exported photographs
+      description: Attach visual evidence when the issue affects Capture, rendering, GUI, models, or photo output.
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Final checks
+      options:
+        - label: I backed up the affected world/data before testing.
+          required: true
+        - label: I removed credentials, private server addresses, and personal data from attachments.
+          required: true

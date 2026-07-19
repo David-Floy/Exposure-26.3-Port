@@ -37,6 +37,7 @@ processResources {
             mod_description              : rootProject.mod_description,
             mod_page                     : rootProject.mod_page,
             mod_github                   : rootProject.mod_github,
+            mod_issues                   : rootProject.mod_issues,
             mod_license                  : rootProject.mod_license,
             minecraft_version            : rootProject.minecraft_version,
             fabric_loader_version        : rootProject.fabric_loader_version,
