@@ -1,14 +1,32 @@
 # Changelog
 
+## [1.9.18-port.1+mc26.1.2] - Unreleased
+
+### Added
+
+- Unofficial Fabric port of Exposure 1.9.18 to Minecraft 26.1.2 and Java 25.
+- Migration regression coverage for Capture, rendering, GUI/Album resources, recipes, commands, paths, entity synchronization, pixels, and model pose behavior.
+- Maintenance, compatibility, upstream-sync, contribution, and prerelease documentation for the port.
+
+### Changed
+
+- Migrated the Fabric production code and resources to the Minecraft 26.1.2 rendering, networking, data, menu, recipe, item-model, entity, and server APIs.
+- Capture now follows the 26.1.2 normal-frame extraction lifecycle with asynchronous readback while preserving Exposure's direct/background semantics.
+- Support scope is Fabric only. Compatibility with older Exposure world and photograph data is not guaranteed.
+
+### Security
+
+- Official project publishing targets are not used by this port; release artifacts require an explicit, separately reviewed prerelease process.
+
 ## 1.9.18 - 2026-06-10
-- Fixed Stacked Photographs item not behaving correctly in Refined Storage or Create Stock Ticker. 
+- Fixed Stacked Photographs item not behaving correctly in Refined Storage or Create Stock Ticker.
 
 ## 1.9.17 - 2026-06-08
 - Fixed dedicated server crash with Crossroads.
 - Potential fix related to larger anvil renaming limit of Interplanar Projector.
 
 ## 1.9.16 - 2026-04-02
-- Attempt to fix weird issue with config "not being loaded".  
+- Attempt to fix weird issue with config "not being loaded".
 
 ## 1.9.15 - 2026-03-25
 - Images loaded with Interplanar Projector are now limited to maximum of 10000x10000.
@@ -23,7 +41,7 @@
 - Capturing the image no longer sets the game to 'panoramic mode' by default.
   - Setting to enable it is added to config. Enable if world is not looking right in the photos.
   - This was done to fix conflict with other mods (specifically `Snapper`).
-- Fixed viewfinder reversing mouse sensitivity at low FOV settings. 
+- Fixed viewfinder reversing mouse sensitivity at low FOV settings.
 - Updated localization files.
 
 ## 1.9.12 - 2025-10-30
@@ -36,19 +54,19 @@
 
 ## 1.9.10 - 2025-06-21
 - Create Deployer can now install/swap attachments on Camera Stand.
-- Fixed not being able to extract a Camera item from Refined Storage grids. 
+- Fixed not being able to extract a Camera item from Refined Storage grids.
 
 ## 1.9.9 - 2025-06-15
 - Fixed github query hanging the game for long time when it's not available.
 
 ## 1.9.8 - 2025-06-07
 - Added `ProtoManly's Weather` to the `force_direct_capture_default_mods` config option, to fix their sky not appearing in photos.
-  - This change will not apply to existing configs, so you'll need to delete existing file to let it regenerate or add it manually. 
+  - This change will not apply to existing configs, so you'll need to delete existing file to let it regenerate or add it manually.
 - Updated localization files.
 
 ## 1.9.7 - 2025-05-30
 - Fixed rendering issue when Distance Horizons and Iris are both installed and shader is activated by force enabling direct capture when these mods are detected together.
-- Fixed photographs dropped as item in creative mode from photograph screen not setting their type and thus require wrong dyes in copying recipe. 
+- Fixed photographs dropped as item in creative mode from photograph screen not setting their type and thus require wrong dyes in copying recipe.
 
 ## 1.9.6 - 2025-05-24
 - Fixed small server-side error.
@@ -71,13 +89,13 @@
 ## 1.9.3 - 2025-05-21
 - Added 'exposure:film_dither_mode' ("dithered" or "clean") component for films.
 - Added 'photograph_frame_image_offset' that can be used to fix some issues with 3D resourcepacks.
-- Fixed Camera model holding pose in thirdperson selfie mode. 
+- Fixed Camera model holding pose in thirdperson selfie mode.
 - Fixed photograph not rendering correctly in Item Frame (when 'photograph_renders_in_item_frame' is enabled).
 
 ## 1.9.2 - 2025-04-24
 - [Fabric] Config screen can now be accessed when ModMenu is installed.
 - Fixed missing Create spout developing recipes for high sensitivity films.
-- Images loaded with Interplanar Projector are no longer cropped. 
+- Images loaded with Interplanar Projector are no longer cropped.
 
 ## 1.9.1 - 2025-04-09
 - Added `#exposure:black_and_white_film_rolls` and `#exposure:color_film_rolls` item tags.
@@ -110,7 +128,7 @@
 - Fixed crash with some mods (Little Tiles is a known one) due to conflicting mixin methods.
 
 ## 1.8.10 - 2025-03-15
-- Added `force_direct_capture_mods` config option. 
+- Added `force_direct_capture_mods` config option.
 - Added `Distant Horizons` to the list of mods that force direct capture if installed.
 - Fixed slashes (and other invalid chars) in player nicknames causing exposures to not save properly.
 
@@ -118,13 +136,13 @@
 - Made small change and added config option that can potentially help to fix occasional server hanging.
 
 ## 1.8.8 - 2025-03-05
-- Fixed 16th page in Album losing content when album is opened.  
+- Fixed 16th page in Album losing content when album is opened.
 
 ## 1.8.7 - 2025-03-05
 - [NeoForge] Fixed Create Sequenced Assembly film developing not working with Create 6.0.1.
 
 ## 1.8.6 - 2025-03-02
-- [NeoForge] Added **Create** `Sequenced Assembly` Film developing recipes. 
+- [NeoForge] Added **Create** `Sequenced Assembly` Film developing recipes.
 
 *Note:*
 - If you want to change sequenced developing recipes - only `filling` steps can be used, otherwise Film data would be erased.
@@ -139,7 +157,7 @@
 - [Fabric] Fixed images showing only the sky with `Effective` installed.
 - Added `/exposure debug highlight_entities_in_frame` command.
 - Moved `waist_level_viewfinder` config option from client to server config.
-- Fixed `/exposure palette convert png_to_json` producing wrong results in some cases. 
+- Fixed `/exposure palette convert png_to_json` producing wrong results in some cases.
 - Internal changes for addon compatibility.
 - Added mexican spanish translation.
 
@@ -148,10 +166,10 @@
 
 ## 1.8.3 - 2025-02-15
 - Moved `different_developing_potions_colors` config option from client to common.
-  - Fixes dedicated server crash when trying to read the config value. 
+  - Fixes dedicated server crash when trying to read the config value.
 - Fixed log message appearing on each level save.
 
-## 1.8.2 - 2025-02-14 
+## 1.8.2 - 2025-02-14
 - Fixed shader shadows being weird when looking through Viewfinder.
 - Fixed incompatibility with some zoom mods.
 
@@ -170,19 +188,19 @@ Capturing:
 - Added new capture method - background. Captures an image, you guessed it, in background, without rendering it on the screen.
   - Screen no longer flickers from hiding the HUD when taking a photo.
   - Direct method (old) still exists, and will be used if Iris is installed (due to technical limitation).
-  - Direct method can also be toggled in config, in case you experience issues with background method. 
+  - Direct method can also be toggled in config, in case you experience issues with background method.
 - Filter post effects are now processed separately from vanilla post effects.
   - Vanilla effects will not be rendered when image is captured, unless turned on in a config.
 
 Color Palette:
-- Exposure no longer uses vanilla MapColors directly. Color palettes are now data-driven. 
+- Exposure no longer uses vanilla MapColors directly. Color palettes are now data-driven.
 - Default color palette still uses all vanilla map colors, but with few additions, mainly brighter colors. Long exposure photos now look slightly better.
 - Added ability to create custom palettes.
 
 Interplanar Projector:
 - Can now load images from URL.
 - When renaming it in Anvil, name length limit has been increased to 150 characters (from vanilla 50), to allow for longer paths.
-- Projector now breaks when loading has failed instead of being consumed. 
+- Projector now breaks when loading has failed instead of being consumed.
 
 Lightroom:
 - Printing now requires light level greater than 12 at position above the Lightroom.
@@ -213,7 +231,7 @@ Config:
 - Most of the 'common' settings has been moved to 'server' config.
 - Added server config option to change default exposure size.
 - Added server config option to disable loading images with Interplanar Projector.
-- Added server config option for configuring which dyes will be consumed when printing. 
+- Added server config option for configuring which dyes will be consumed when printing.
 - Added client config option to shift view to where camera actually is when held at waist-level.
 
 ## 1.7.6 - 2024-08-17
@@ -224,21 +242,21 @@ Config:
 - Fixed Camera resetting zoom when attachments change.
 - Minor adjustments to unlocking recipes in a recipe book
   - Fixed Camera recipe being unlocked from the start
-- Fixed crash trying to render a Photograph without NBT-tag. 
+- Fixed crash trying to render a Photograph without NBT-tag.
 
 ## 1.7.4 - 2024-07-20
-- Fixed negatives in Lightroom rendering with larger size than they should.  
+- Fixed negatives in Lightroom rendering with larger size than they should.
 
 ## 1.7.3 - 2024-07-19
 - Fixed `export` command not working/crashing on a dedicated server.
 - Added config options to hide projected/all photographs made by other players.
-- [Real Camera compat] Player model will not be rendered while looking through viewfinder. 
+- [Real Camera compat] Player model will not be rendered while looking through viewfinder.
 
 ## 1.7.2 - 2024-07-04
 - Fixed dedicated server crash when chromatic photograph is printed.
-- [Forge] Fixed Camera recipe change from 1.7.0 not being applied. 
+- [Forge] Fixed Camera recipe change from 1.7.0 not being applied.
 - Viewfinder zooming animation is now slightly faster.
-- Photograph Frame and Interplanar Projector recipes now added to recipe book if player has required items. 
+- Photograph Frame and Interplanar Projector recipes now added to recipe book if player has required items.
 
 ## 1.7.1 - 2024-06-28
 - Fixed Interplanar Projector not working when Supplementaries is installed.
@@ -247,7 +265,7 @@ Config:
 - Added **Photograph Frames**
   - **Photographs** can no longer be hanged on the wall. Existing hanging photographs will not be removed.
 - Added **Film Roll renaming**. Use the item to open renaming UI. Renaming this way does not cost any experience.
-- Added **Interplanar Projector** filter. Allows loading custom images by renaming the item to filepath. 
+- Added **Interplanar Projector** filter. Allows loading custom images by renaming the item to filepath.
 - Updated item textures.
 - Added several photographs that generate in loot chests.
 - Added several new advancements
@@ -262,29 +280,29 @@ Config:
 - Added ability to render custom Filter texture in Camera Attachments UI `//WIKI`
 
 <br>
-  
+
 - **Lightroom** comparator output now based on the number of Photographs in the output slot rather than the selected frame.
 - **Chromatic Process** can now be enabled for all black and white images by placing an Amethyst Cluster on top of a Lightroom.
 - **Color Film** recipe now requires Gold ingots and nuggets instead of Iron.
-- **Camera** recipe now uses only Iron Ingots instead of Iron Nuggets and Pressure Plate. 
+- **Camera** recipe now uses only Iron Ingots instead of Iron Nuggets and Pressure Plate.
 - **Film** developing recipe will now also accept potions defined without `minecraft:` namespace - i.e. `{Potion:thick}`.
 - Viewfinder will now show an indicator for last three frames to remind you that the Film Roll is about to end.
 - Slightly reduced brightness increase per shutter speed.
 - Improved player arms positions in selfie pose.
-- Fixed player selfie pose sometimes not applying when activating/deactivating Camera rapidly.  
+- Fixed player selfie pose sometimes not applying when activating/deactivating Camera rapidly.
 - Loaded exposures now support images with transparency, but only when the pixel is fully transparent.
 
 ## 1.6.0 - 2024-05-11
 
 - Middle mouse button can now be used to open Camera controls.
-  - Allows opening controls without dismounting from a horse. Or jumping off a plane mid-flight. (Without rebinding sneak) 
+  - Allows opening controls without dismounting from a horse. Or jumping off a plane mid-flight. (Without rebinding sneak)
   - This is independent of the main hotkey, and will work alongside it. Can be disabled in config.
 - Right-clicking on the Camera in inventory will open Camera configuration screen.
   - Right-click with item install/swap an attachment.
 
-- Added KubeJS integration - [Wiki](https://github.com/mortuusars/Exposure/wiki/KubeJS-Integration) 
-- Added three java events (same as in KubeJS) for addon developers. 
-- Added Jade integration to Lightroom: it now shows printing progress arrow. 
+- Added KubeJS integration - [Wiki](https://github.com/mortuusars/Exposure/wiki/KubeJS-Integration)
+- Added three java events (same as in KubeJS) for addon developers.
+- Added Jade integration to Lightroom: it now shows printing progress arrow.
 - Added config option to disable attacking while looking through Viewfinder.
 - Added config option to delay capture (useful when GUI elements are not hidden fully, which happens with some shaders)
 - Stacking two Photographs (by right-clicking in GUI) will keep the resulted item in slot instead of picking it up.
@@ -292,9 +310,9 @@ Config:
 - Developed rolls now show frame size (if custom) in tooltip, same as undeveloped rolls.
 - Adjusted 'No Film' icon position with different GUI scales.
 - Adjusted Viewfinder 'catching-up' movement for different GUI scales.
-- Photograph paper texture is now randomly rotated to have more variation.  
+- Photograph paper texture is now randomly rotated to have more variation.
 - Slightly modified Aged Photograph texture to have less rounded corners.
-- GUI titles now have a separate lang entries instead of using corresponding block/item entries. 
+- GUI titles now have a separate lang entries instead of using corresponding block/item entries.
 
 - Fixed custom Lenses not syncing to the player when they join a server.
 - [Fabric] Fixed Sequenced Film Developing (with Create) recipes not showing in EMI
@@ -316,9 +334,9 @@ Config:
 
 
 Exporting:
-- Aged Photographs can be exported now (same as regular - when screen is opened). PNG will have `_aged` suffix.  
-- Exported PNGs are now X2 the size. Configurable in client config. 
-- Exported PNG files will have their `Date Created` attribute set to time when they were taken. Only for exposures made on this version an up.  
+- Aged Photographs can be exported now (same as regular - when screen is opened). PNG will have `_aged` suffix.
+- Exported PNGs are now X2 the size. Configurable in client config.
+- Exported PNG files will have their `Date Created` attribute set to time when they were taken. Only for exposures made on this version an up.
 
 
 Commands:
@@ -331,23 +349,23 @@ Commands:
 
 
 Lightroom:
-- When in creative mode, you can now hold [Shift] to print exposure instantly and without dyes/paper   
+- When in creative mode, you can now hold [Shift] to print exposure instantly and without dyes/paper
 - Experience points, granted for printing an image, are now different per process - bw/color/chromatic. Config now has three options instead of one to configure this.
 
 
 - Fixed crash when rendering a non-square texture as a Photograph.
-- [Forge] Fixed crash when clicking on exposure in mods menu. For real this time.  
+- [Forge] Fixed crash when clicking on exposure in mods menu. For real this time.
 - [Fabric] Fixed camera recipe not unlocking in recipe book when iron ingot is obtained.
 
 ## 1.4.1 - 2024-03-15
 - Fixed Lenses config resetting and not working properly.
 - Fixed issue with `Cold Sweat` when closing viewfinder with filter installed causing blur shader to apply when it shouldn't.
-- Fixed `FTB Teams`, `REI` and `REI Plugin Compat` causing the game to freeze indefinitely when Album is opened.  
+- Fixed `FTB Teams`, `REI` and `REI Plugin Compat` causing the game to freeze indefinitely when Album is opened.
 
 
 - [Fabric] Fixed Create's Spout crashing with latest `Create Fabric`.
-- There will be no crash anymore if the `Create` version is not supported. Spout Film Developing will not work for incompatible versions instead. 
-- Create 0.5.1f is needed for Spout Film Developing to work. 
+- There will be no crash anymore if the `Create` version is not supported. Spout Film Developing will not work for incompatible versions instead.
+- Create 0.5.1f is needed for Spout Film Developing to work.
 
 ## 1.4.0 - 2024-03-02
 - Added Aged Photographs. Created by crafting a Photograph with brown dye
@@ -355,7 +373,7 @@ Lightroom:
 
 
 - Lowered required Fabric API version to 0.88.1+
-- Updated localization files 
+- Updated localization files
 
 
 - Fixed incorrect position of a Photograph in Quark's Glass Item Frame
@@ -365,27 +383,27 @@ Lightroom:
 ## 1.3.1 - 2024-02-09
 - Added advancement for taking a selfie
 - Slightly changed order of advancements
-- Entities in frame (in photograph NBT) will now work correctly for selfies 
+- Entities in frame (in photograph NBT) will now work correctly for selfies
 - Black and white photograph copying recipe now correctly uses only black dye instead of all four colors
 - Changed Film Frame Exposed advancement trigger from `minecraft:frame_exposed` to `exposure:frame_exposed`
-- [Fabric] Proper message will now show when `Fabric API` or `Forge Config Api Port` is not installed 
+- [Fabric] Proper message will now show when `Fabric API` or `Forge Config Api Port` is not installed
 - [Fabric] Fixed crash when signing album
 
 ## 1.3.0 - 2024-02-04
-- Added Photo Album 
+- Added Photo Album
   - Can store up to 16 photographs and some notes
   - Can be placed on Chiseled Bookshelves and Lecterns
 
 
 - Changed photograph paper texture to not be so rough at the edges
 - Holding use when opening Viewfinder will no longer cause Camera to shoot immediately after opening
-- Camera controls key can be remapped now. Unbound means it will use sneak key, as before. Unbound by default.   
+- Camera controls key can be remapped now. Unbound means it will use sneak key, as before. Unbound by default.
 
 
-- Fixed non-english characters in player's nickname causing a crash when trying to render their photos 
+- Fixed non-english characters in player's nickname causing a crash when trying to render their photos
 - Fixed Lightroom not resetting selected frame back to 0 when film is ejected and another is inserted
 - Fixed Lightroom not dropping due to the missing loot-table
-- [Forge] Fixed item frame also rendering an item over the photograph 
+- [Forge] Fixed item frame also rendering an item over the photograph
 
 ## 1.2.2 - 2024-01-01
 - Added `/exposure export` command. Allows exporting exposures to PNGs to `<world>/exposures` folder. Requires OP privileges.
@@ -396,22 +414,22 @@ Lightroom:
 
 - Fixed being able to copy `Copy of a copy` photograph.
 - Fixed fov related issue that was causing problems with zoom mods.
-- Fixed Lightroom Screen film bugging out when replacing Developed Film in slot with a film that has fewer frames than currently selected frame index.   
+- Fixed Lightroom Screen film bugging out when replacing Developed Film in slot with a film that has fewer frames than currently selected frame index.
 - Made some changes that may fix the crash with C2ME.
 
 ## 1.2.1 - 2023-12-24
 - Fixed water not rendering properly with shaders when looking through Viewfinder.
 
 ## 1.2.0 - 2023-12-22
-- Added `exposure:flashes` and `exposure:lenses` tags, allowing customization of items that can be attached to the camera. 
+- Added `exposure:flashes` and `exposure:lenses` tags, allowing customization of items that can be attached to the camera.
 - Added Focal Length config options, allowing to configure default camera range and range per specific lens.
 
 #### Changed Developing Recipe:
-- Developing recipes will no longer show in vanilla Recipe Book due to the book not working well with this type of recipes (like with cloning written books or dyeing armor)   
+- Developing recipes will no longer show in vanilla Recipe Book due to the book not working well with this type of recipes (like with cloning written books or dyeing armor)
 - Developing can now be done with Create's Spouts. Configurable.
 - Films no longer can be developed with Create's Mechanical Crafter
 
-#### Misc: 
+#### Misc:
 - Added zh_cn localization provided by 'IwasConfused'
 - When JEI is not present, tooltips will be shown describing Developing and Photograph Copying recipes.
 - Items can now be extracted from any side of a Lightroom block. And inserted through all but bottom side.
@@ -423,7 +441,7 @@ Lightroom:
 - Fixed third-person camera distance being closer when not looking through the Viewfinder.
 
 ## 1.1.0 - 2023-12-07
-- Added selfies. Press F5 (by default) to be the star of the show. 
+- Added selfies. Press F5 (by default) to be the star of the show.
 
 - Fixed Viewfinder Controls not showing up when sneak is bound to one of the mouse buttons.
 - Fixed errors in log about developing and cloning recipes
@@ -433,4 +451,4 @@ Lightroom:
 - Fixed crash when trying to add more than 16 photographs to the Stacked Photographs item.
 
 ## 1.0.1 - 2023-12-01
-- Film developing recipe has been removed from Create's Automated Shapeless Crafting due to Mixer's whisk being too rough on the film, clearing any exposed images.   
+- Film developing recipe has been removed from Create's Automated Shapeless Crafting due to Mixer's whisk being too rough on the film, clearing any exposed images.

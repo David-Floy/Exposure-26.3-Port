@@ -1,2 +1,4 @@
 *.bat text eol=crlf
 gradlew text eol=lf
+# Preserve immutable migration reports, including Markdown hard breaks and EOF spacing.
+docs/migration/history/*.md whitespace=-blank-at-eol,-blank-at-eof
