@@ -3,7 +3,6 @@ package io.github.mortuusars.exposure.core.warehouse.server;
 import io.github.mortuusars.exposure.world.level.storage.ExposureIdentifier;
 import io.github.mortuusars.exposure.world.camera.frame.Frame;
 import io.github.mortuusars.exposure.world.level.storage.ExposureFrameHistory;
-import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtOps;
@@ -11,8 +10,8 @@ import org.junit.jupiter.api.Test;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
-import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -24,10 +23,19 @@ public class FrameHistoryTests {
         ExposureFrameHistory history = new ExposureFrameHistory(new HashMap<>());
         history.add(randomUUID, Frame.EMPTY.toMutable().setIdentifier(ExposureIdentifier.id("test")).toImmutable());
 
-        CompoundTag tag = history.save(new CompoundTag(), HolderLookup.Provider.create(Stream.of()));
+        CompoundTag tag = (CompoundTag) ExposureFrameHistory.CODEC
+                .encodeStart(NbtOps.INSTANCE, history).getOrThrow();
 
-        String expected = "{" + randomUUID + ":[{identifier:\"test\"}]}";
-        assertEquals(expected, tag.toString());
+        assertEquals(Set.of(randomUUID.toString()), tag.keySet());
+        ListTag encodedFrames = tag.getList(randomUUID.toString()).orElseThrow();
+        assertEquals(1, encodedFrames.size());
+        CompoundTag encodedFrame = assertInstanceOf(CompoundTag.class, encodedFrames.get(0));
+        assertEquals(Set.of("identifier"), encodedFrame.keySet());
+        assertEquals("test", encodedFrame.getString("identifier").orElseThrow());
+
+        ExposureFrameHistory decodedHistory = ExposureFrameHistory.CODEC
+                .parse(NbtOps.INSTANCE, tag).getOrThrow();
+        assertEquals("test", decodedHistory.getFramesOf(randomUUID).getFirst().identifier().id());
     }
 
     @Test
@@ -41,10 +49,12 @@ public class FrameHistoryTests {
         listTag.add(Frame.CODEC.encode(frame, NbtOps.INSTANCE, new CompoundTag()).getOrThrow());
         tag.put(randomUUID.toString(), listTag);
 
-        ExposureFrameHistory decodedHistory = ExposureFrameHistory.load(tag, HolderLookup.Provider.create(Stream.of()));
+        ExposureFrameHistory decodedHistory = ExposureFrameHistory.CODEC
+                .parse(NbtOps.INSTANCE, tag).getOrThrow();
         List<Frame> frames = decodedHistory.getFramesOf(randomUUID);
 
         assertEquals("test", frames.getFirst().identifier().id());
+        assertEquals(tag, ExposureFrameHistory.CODEC.encodeStart(NbtOps.INSTANCE, decodedHistory).getOrThrow());
     }
 
     @Test
