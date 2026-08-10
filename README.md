@@ -1,6 +1,6 @@
 # Exposure 1.9.18 for Minecraft 26.1.2
 
-> **Unofficial Fabric Port — Beta 1**
+> **Unofficial Fabric Port — Patch 2**
 
 This repository contains an unofficial Minecraft 26.1.2 Fabric port of [Exposure](https://github.com/mortuusars/Exposure), the camera mod created by [Mortuusars](https://github.com/mortuusars). It is based on Exposure 1.9.18 at fixed upstream commit [`9383e0c9237099947a1e6399fcace5772f496c7d`](https://github.com/mortuusars/Exposure/commit/9383e0c9237099947a1e6399fcace5772f496c7d).
 
@@ -8,8 +8,9 @@ Filmorae maintains this port but is not the original author. Problems specific t
 
 ## Status
 
-- Beta/prerelease; Fabric only.
-- Port version: `1.9.18-port.1+mc26.1.2`.
+- Fabric only.
+- Port version: `1.9.18-port.2+mc26.1.2`.
+- Fixed the third-person grey duplicate photograph caused by the held photograph backside transform.
 - The mod id remains `exposure` for dependent-mod recognition.
 - Compatibility with old Exposure worlds, albums, photographs, and repository data is not guaranteed. Back up a world before testing.
 

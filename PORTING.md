@@ -32,6 +32,8 @@ Compatibility work may adapt public frame lifecycle boundaries, but must not rea
 
 Minecraft 26.1.2 separates render-state extraction from submission. Extract stable data while the source entity, item, menu, or model is valid, store it in the corresponding render state/request, and submit later without reaching back into stale live state. Do not reintroduce immediate-render assumptions.
 
+Held photograph front and back faces use a local unit quad (`x/y = 0..1`).  The back face must rotate around `(0.5, 0.5, 0)` and sit only a small distance behind the front face; do not carry forward the legacy `rotateY(180)` plus `translate(-0.5, 0, -0.5)` sequence.  That sequence places a submitted 26.1.2 back quad half a unit away and appears as a grey duplicate in third person.  Keep the centre/bounds and reversed-normal regression test when adapting this renderer.
+
 GUI and Album blits must explicitly distinguish:
 
 - destination rectangle and destination scaling;
@@ -86,3 +88,11 @@ The final test total must be at least 58 with no failures, errors, or skipped te
 - Shader claims apply only to the exact versions recorded in `COMPATIBILITY.md`. Other GPUs, render mods, player model layers, skin layers, and Shader Packs remain unverified until tested.
 
 When adding a compatibility fix, record the affected versions, minimal reproduction, first root failure, implementation boundary, targeted validation, full gate, and remaining unverified matrix. Update `UPSTREAM_SYNC.md` if the business intent came from upstream.
+
+## Current release artifact
+
+- Version: `1.9.18-port.2+mc26.1.2`
+- Target: Minecraft 26.1.2, Fabric, Java 25
+- File: `exposure-fabric-26.1.2-1.9.18-port.2+mc26.1.2.jar`
+- SHA-256: `66AD638442BA229243828236165880B125093DCDBA27B296CF7E7F15559EF6D8`
+- The verified local delivery copy is retained under `release-artifacts/` and is also attached to the matching GitHub Release. This workflow does not publish to Modrinth or CurseForge.

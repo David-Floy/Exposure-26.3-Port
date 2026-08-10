@@ -1,6 +1,13 @@
 # Changelog
 
-## [1.9.18-port.1+mc26.1.2] - Unreleased
+## [1.9.18-port.2+mc26.1.2] - 2026-08-10
+
+### Fixed
+
+- Fixed developed photographs held in third person rendering a grey duplicate from the incorrectly offset backside geometry.
+- Preserved normal photograph backside rendering and added regression coverage for the centred, reversed backside transform.
+
+## [1.9.18-port.1+mc26.1.2] - 2026-07-19
 
 ### Added
 

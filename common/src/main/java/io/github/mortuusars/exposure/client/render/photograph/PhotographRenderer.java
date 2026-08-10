@@ -143,9 +143,7 @@ public class PhotographRenderer {
 
     private void submitBackside(PhotographRenderRequest request, PoseStack poseStack, SubmitNodeCollector collector) {
         poseStack.pushPose();
-        poseStack.mulPose(Axis.YP.rotationDegrees(180));
-        poseStack.translate(-0.5, 0, -0.5);
-        rotatePaper(poseStack, request.paperRotation());
+        PhotographRenderTransforms.applyBackside(poseStack, request.paperRotation());
         TextureRenderer.submit(poseStack, collector, request.paperTexture(), request.image().packedLight(),
                 (int) (request.image().red() * 0.85f), (int) (request.image().green() * 0.85f),
                 (int) (request.image().blue() * 0.85f), request.image().alpha());
@@ -153,9 +151,7 @@ public class PhotographRenderer {
     }
 
     private static void rotatePaper(PoseStack poseStack, int rotation) {
-        poseStack.translate(0.5f, 0.5f, 0);
-        poseStack.mulPose(Axis.ZP.rotationDegrees(rotation));
-        poseStack.translate(-0.5f, -0.5f, 0);
+        PhotographRenderTransforms.applyPaperRotation(poseStack, rotation);
     }
 
     public float getStackedBrightnessStep() { return 0.2f; }
