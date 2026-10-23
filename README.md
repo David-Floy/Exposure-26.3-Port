@@ -6,6 +6,8 @@ This repository contains an unofficial Minecraft 26.3 Fabric port of [Exposure](
 
 David-Floy maintains this 26.3 port; neither David-Floy nor Filmorae is the original author. Problems specific to this repository must **not** be reported to the official Exposure issue tracker; use this fork's [issue tracker](https://github.com/David-Floy/Exposure-26.3-Port/issues).
 
+The port from Minecraft 26.1.2 to 26.3 was carried out with Claude Opus 5.5 (Anthropic) as an AI coding assistant.
+
 ## Status
 
 - Fabric only.
