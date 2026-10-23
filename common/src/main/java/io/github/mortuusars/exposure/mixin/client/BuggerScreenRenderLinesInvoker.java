@@ -9,6 +9,7 @@ import java.util.List;
 
 @Mixin(DebugScreenOverlay.class)
 public interface BuggerScreenRenderLinesInvoker {
+    /** 26.3 added the screen width; passing {@code guiWidth()} keeps the 26.1.2 right-side alignment. */
     @Invoker("extractLines")
-    void drawLines(GuiGraphicsExtractor guiGraphics, List<String> lines, boolean leftSide);
+    void drawLines(GuiGraphicsExtractor guiGraphics, List<String> lines, boolean leftSide, int scaledScreenWidth);
 }

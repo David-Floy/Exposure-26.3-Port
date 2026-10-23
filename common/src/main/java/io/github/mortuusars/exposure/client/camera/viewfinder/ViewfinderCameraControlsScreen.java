@@ -38,6 +38,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import org.lwjgl.sdl.SDLScancode;
 
 public class ViewfinderCameraControlsScreen extends Screen {
     public static final WidgetSprites SHUTTER_SPEED_SPRITES = new WidgetSprites(
@@ -226,8 +227,7 @@ public class ViewfinderCameraControlsScreen extends Screen {
             if (keyMapping.key.getType() == InputConstants.Type.MOUSE) {
                 keyMapping.setDown(MouseHandler.isMouseButtonHeld(keyMapping.key.getValue()));
             } else {
-                keyMapping.setDown(InputConstants.isKeyDown(
-                        Minecraft.getInstance().getWindow(), keyMapping.key.getValue()));
+                keyMapping.setDown(InputConstants.isKeyDown(keyMapping.key.getValue()));
             }
         };
 
@@ -247,7 +247,7 @@ public class ViewfinderCameraControlsScreen extends Screen {
             return;
         }
 
-        if (Minecrft.options().hideGui) return;
+        if (Minecrft.get().gui.hud.isHidden()) return;
 
         guiGraphics.pose().pushMatrix();
 
@@ -345,7 +345,7 @@ public class ViewfinderCameraControlsScreen extends Screen {
         if (event.key() == InputConstants.KEY_ADD || event.key() == InputConstants.KEY_EQUALS) {
             viewfinder.zoom().zoom(ZoomDirection.IN, true);
             return true;
-        } else if (event.key() == 333 /*KEY_SUBTRACT*/ || event.key() == InputConstants.KEY_MINUS) {
+        } else if (event.key() == SDLScancode.SDL_SCANCODE_KP_MINUS || event.key() == InputConstants.KEY_MINUS) {
             viewfinder.zoom().zoom(ZoomDirection.OUT, true);
             return true;
         }

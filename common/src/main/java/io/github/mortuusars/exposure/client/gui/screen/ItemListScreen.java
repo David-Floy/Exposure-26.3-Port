@@ -218,6 +218,6 @@ public class ItemListScreen extends Screen {
 
     @Override
     public void onClose() {
-        Minecrft.get().setScreen(parent);
+        Minecrft.get().gui.setScreen(parent);
     }
 }

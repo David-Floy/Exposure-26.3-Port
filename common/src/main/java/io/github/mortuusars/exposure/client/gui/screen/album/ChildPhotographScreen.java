@@ -27,7 +27,7 @@ public class ChildPhotographScreen extends PhotographScreen {
         super.extractRenderState(guiGraphics, mouseX, mouseY, partialTick);
 
         if (zoom.get() < zoom.getMin() + 0.1f && zoom.getTarget() < zoom.getMin() + 0.1f) {
-            Minecrft.get().setScreen(parentScreen);
+            Minecrft.get().gui.setScreen(parentScreen);
             Minecrft.player().playSound(Exposure.SoundEvents.PHOTOGRAPH_PLACE.get(), 0.7f, 1.1f);
         }
     }

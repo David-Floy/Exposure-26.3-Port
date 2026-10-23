@@ -30,7 +30,7 @@ public class KeyBindings {
     // --
 
     public boolean keyPressed(KeyEvent event) {
-        return keyPressed(event.key(), event.scancode(), event.modifiers());
+        return keyPressed(event.key(), event.keycode(), event.modifiers());
     }
 
     public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
@@ -43,7 +43,7 @@ public class KeyBindings {
     }
 
     public boolean keyReleased(KeyEvent event) {
-        return keyReleased(event.key(), event.scancode(), event.modifiers());
+        return keyReleased(event.key(), event.keycode(), event.modifiers());
     }
 
     public boolean keyReleased(int keyCode, int scanCode, int modifiers) {

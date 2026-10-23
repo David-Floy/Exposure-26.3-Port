@@ -21,6 +21,7 @@ import io.github.mortuusars.exposure.world.inventory.tooltip.PhotographTooltip;
 import io.github.mortuusars.exposure.world.item.camera.CameraItem;
 import io.github.mortuusars.exposure.network.fabric.FabricS2CPacketHandler;
 import io.github.mortuusars.exposure.client.render.PhotographFrameEntityRenderer;
+import io.github.mortuusars.exposure.client.render.model.SharedTransformCompositeModel;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.keymapping.v1.KeyMappingHelper;
 import net.fabricmc.fabric.api.client.model.loading.v1.ModelLoadingPlugin;
@@ -32,6 +33,7 @@ import net.minecraft.client.color.item.ItemTintSource;
 import net.minecraft.client.color.item.ItemTintSources;
 import net.minecraft.client.gui.screens.MenuScreens;
 import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.client.renderer.item.ItemModels;
 import net.minecraft.server.packs.PackType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
@@ -45,6 +47,7 @@ public class ExposureFabricClient implements ClientModInitializer {
         ExposureClient.init();
 
         ItemTintSources.ID_MAPPER.put(Exposure.resource("camera_glass"), CameraGlassTintSource.MAP_CODEC);
+        ItemModels.ID_MAPPER.put(Exposure.resource("shared_transform_composite"), SharedTransformCompositeModel.Unbaked.MAP_CODEC);
 
         ConfigScreenFactoryRegistry.INSTANCE.register(Exposure.ID, ConfigurationScreen::new);
 

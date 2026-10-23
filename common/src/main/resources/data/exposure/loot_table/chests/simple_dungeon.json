@@ -7,26 +7,22 @@
         {
           "type": "minecraft:item",
           "name": "exposure:photograph",
-          "functions": [
-            {
-              "function": "minecraft:set_components",
-              "components": {
-                "exposure:photograph_frame": {
-                  "identifier": {
-                    "texture": "exposure:textures/exposure/dungeon/skull_on_fire.png"
-                  }
+          "modifier": {
+            "type": "minecraft:set_components",
+            "components": {
+              "exposure:photograph_frame": {
+                "identifier": {
+                  "texture": "exposure:textures/exposure/dungeon/skull_on_fire.png"
                 }
               }
             }
-          ]
+          }
         }
       ],
-      "conditions": [
-        {
-          "condition": "minecraft:random_chance",
-          "chance": 0.1
-        }
-      ]
+      "condition": {
+        "type": "minecraft:random_chance",
+        "chance": 0.1
+      }
     }
   ]
 }

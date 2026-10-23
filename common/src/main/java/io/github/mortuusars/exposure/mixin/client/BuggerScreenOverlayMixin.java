@@ -13,9 +13,13 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(DebugScreenOverlay.class)
 public class BuggerScreenOverlayMixin {
+    /**
+     * Upstream hooked {@code DebugScreenOverlay#render}, which only ran while the F3 debug screen was open.
+     * {@code extractRenderState} runs every frame, so the Bugger pages and hint are limited to the open debug screen.
+     */
     @Inject(method = "extractRenderState", at = @At("HEAD"), cancellable = true)
     private void onExtractRenderState(GuiGraphicsExtractor guiGraphics, CallbackInfo ci) {
-        if (!PlatformHelper.isInDevEnv() || Minecraft.getInstance().level == null) return;
+        if (!PlatformHelper.isInDevEnv() || Minecraft.getInstance().level == null || !Bugger.isDebugScreenOpen()) return;
 
         if (Bugger.page == 0) {
             Profiler.get().push("bugger_main");

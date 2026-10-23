@@ -3,7 +3,7 @@ package io.github.mortuusars.exposure.advancements.predicate;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import io.github.mortuusars.exposure.world.camera.frame.EntityInFrame;
-import net.minecraft.advancements.criterion.MinMaxBounds;
+import net.minecraft.advancements.predicates.MinMaxBounds;
 import net.minecraft.resources.Identifier;
 
 import java.util.List;

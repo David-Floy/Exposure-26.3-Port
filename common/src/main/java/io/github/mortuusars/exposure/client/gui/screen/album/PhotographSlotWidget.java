@@ -187,7 +187,7 @@ public class PhotographSlotWidget extends AbstractWidget {
             return false;
         }
 
-        Minecrft.get().setScreen(new ChildPhotographScreen(parent, List.of(new ItemAndStack<>(photograph))));
+        Minecrft.get().gui.setScreen(new ChildPhotographScreen(parent, List.of(new ItemAndStack<>(photograph))));
         Minecrft.get().getSoundManager().play(SimpleSoundInstance.forUI(Exposure.SoundEvents.PHOTOGRAPH_RUSTLE.get(),
                         Minecrft.level().getRandom().nextFloat() * 0.2f + 1.3f, 0.75f));
         return true;

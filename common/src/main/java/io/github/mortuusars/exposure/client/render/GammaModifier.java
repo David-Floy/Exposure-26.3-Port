@@ -35,7 +35,7 @@ public class GammaModifier {
 
     private static void updateCurrentLightmap(float previousOffset, float newOffset) {
         Minecraft minecraft = Minecraft.getInstance();
-        LightmapRenderState state = minecraft.gameRenderer.getGameRenderState().lightmapRenderState;
+        LightmapRenderState state = minecraft.gameRenderer.gameRenderState().lightmapRenderState;
         state.brightness += newOffset - previousOffset;
         state.needsUpdate = true;
         ((GameRendererLightmapAccessor) minecraft.gameRenderer).exposure$getLightmap().render(state);

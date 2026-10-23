@@ -4,7 +4,7 @@ Describe the change and its user/developer impact.
 
 ## Root cause
 
-Explain the first root failure and why this fix belongs in the Minecraft 26.1.2 Fabric port.
+Explain the first root failure and why this fix belongs in the Minecraft 26.3 Fabric port.
 
 ## Validation
 

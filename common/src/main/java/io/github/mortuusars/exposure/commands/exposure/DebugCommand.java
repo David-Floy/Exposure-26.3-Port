@@ -29,6 +29,7 @@ import net.minecraft.network.chat.*;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.Nullable;
 
@@ -190,7 +191,11 @@ public class DebugCommand {
                 if (replace) {
                     player.setItemInHand(hand, developedFilmStack);
                 } else if (!player.addItem(developedFilmStack)) {
-                    player.drop(developedFilmStack, true, false);
+                    // 26.3 removed the randomly-scattered drop overload; this mirrors Inventory#dropAll.
+                    ItemEntity drop = player.createItemStackToDrop(developedFilmStack, true, false);
+                    if (drop != null) {
+                        player.level().addFreshEntity(drop);
+                    }
                 }
 
                 stack.sendSuccess(() -> Component.translatable("command.exposure.debug.develop.success",

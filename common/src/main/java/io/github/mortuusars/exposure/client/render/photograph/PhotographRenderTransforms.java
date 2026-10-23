@@ -20,7 +20,7 @@ final class PhotographRenderTransforms {
 
     static void applyBackside(PoseStack poseStack, int paperRotation) {
         poseStack.translate(HALF_QUAD, HALF_QUAD, 0);
-        poseStack.mulPose(Axis.YP.rotationDegrees(180));
+        poseStack.rotate(Axis.YP.rotationDegrees(180));
         // After the Y flip, positive local depth is behind the front face.
         poseStack.translate(-HALF_QUAD, -HALF_QUAD, BACKSIDE_DEPTH);
         applyPaperRotation(poseStack, paperRotation);
@@ -28,7 +28,7 @@ final class PhotographRenderTransforms {
 
     static void applyPaperRotation(PoseStack poseStack, int paperRotation) {
         poseStack.translate(HALF_QUAD, HALF_QUAD, 0);
-        poseStack.mulPose(Axis.ZP.rotationDegrees(paperRotation));
+        poseStack.rotate(Axis.ZP.rotationDegrees(paperRotation));
         poseStack.translate(-HALF_QUAD, -HALF_QUAD, 0);
     }
 }

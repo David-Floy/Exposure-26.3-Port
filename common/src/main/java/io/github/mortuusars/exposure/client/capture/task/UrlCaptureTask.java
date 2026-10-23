@@ -57,7 +57,7 @@ public class UrlCaptureTask extends Task<Result<Image>> {
             return false;
         }
 
-        if (Minecrft.get().isSingleplayer()) {
+        if (Minecrft.isSingleplayer()) {
             return true;
         }
 

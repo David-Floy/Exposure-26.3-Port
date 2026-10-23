@@ -12,7 +12,7 @@ import net.minecraft.client.renderer.entity.ItemFrameRenderer;
 import net.minecraft.client.renderer.entity.state.ItemFrameRenderState;
 import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.core.Direction;
-import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.decoration.ItemFrame;
 import net.minecraft.world.item.ItemStack;
 import org.spongepowered.asm.mixin.Mixin;
@@ -32,7 +32,7 @@ public class ItemFrameRendererMixin {
         if (!Config.Client.PHOTOGRAPH_RENDERS_IN_ITEM_FRAME.get() || !(stack.getItem() instanceof PhotographItem item)
                 || item.getFrame(stack).identifier().isEmpty()) return;
 
-        int light = frame.getType() == EntityType.GLOW_ITEM_FRAME ? 0xF000F0 : state.lightCoords;
+        int light = frame.getType() == EntityTypes.GLOW_ITEM_FRAME ? 0xF000F0 : state.lightCoords;
         PhotographRenderer.PhotographRenderRequest request = ExposureClient.photographRenderer()
                 .prepare(stack, false, false, light, 255, 255, 255, 255);
         if (!request.isEmpty()) {
@@ -55,16 +55,16 @@ public class ItemFrameRendererMixin {
         poseStack.translate(direction.getStepX() * 0.46875, direction.getStepY() * 0.46875, direction.getStepZ() * 0.46875);
         float xRot = direction.getAxis().isHorizontal() ? 0 : -90 * direction.getAxisDirection().getStep();
         float yRot = direction.getAxis().isHorizontal() ? 180.0F - direction.toYRot() : 180.0F;
-        poseStack.mulPose(Axis.XP.rotationDegrees(xRot));
-        poseStack.mulPose(Axis.YP.rotationDegrees(yRot));
+        poseStack.rotate(Axis.XP.rotationDegrees(xRot));
+        poseStack.rotate(Axis.YP.rotationDegrees(yRot));
         poseStack.translate(0, 0, state.isInvisible ? 0.5f : 0.4375f);
         // This is the same matrix at the legacy item-model invocation.  The
         // two scales cancel exactly as the old ClientEvents path did.
-        poseStack.mulPose(Axis.ZP.rotationDegrees(state.rotation * 45.0F));
+        poseStack.rotate(Axis.ZP.rotationDegrees(state.rotation * 45.0F));
         poseStack.scale(0.5f, 0.5f, 0.5f);
         poseStack.scale(2.0f, 2.0f, 2.0f);
-        poseStack.mulPose(Axis.ZP.rotationDegrees(state.rotation * 45.0F));
-        poseStack.mulPose(Axis.ZP.rotationDegrees(180.0F));
+        poseStack.rotate(Axis.ZP.rotationDegrees(state.rotation * 45.0F));
+        poseStack.rotate(Axis.ZP.rotationDegrees(180.0F));
         poseStack.scale(0.625f, 0.625f, 0.625f);
         poseStack.translate(-0.5f, -0.5f, 0.045f);
         ExposureClient.photographRenderer().submit(request, poseStack, collector);

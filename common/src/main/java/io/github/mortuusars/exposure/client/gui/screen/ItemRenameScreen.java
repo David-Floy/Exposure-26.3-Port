@@ -118,7 +118,7 @@ public class ItemRenameScreen extends AbstractContainerScreen<ItemRenameMenu> {
     @Override
     public boolean keyPressed(KeyEvent event) {
         int keyCode = event.key();
-        if (keyCode == 256) {
+        if (keyCode == InputConstants.KEY_ESCAPE) {
             onClose();
         }
 

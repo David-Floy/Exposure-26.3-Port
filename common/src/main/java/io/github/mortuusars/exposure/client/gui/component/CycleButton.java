@@ -1,6 +1,7 @@
 package io.github.mortuusars.exposure.client.gui.component;
 
 import com.google.common.base.Preconditions;
+import com.mojang.blaze3d.platform.InputConstants;
 import io.github.mortuusars.exposure.client.gui.Tooltips;
 import io.github.mortuusars.exposure.client.gui.Widgets;
 import net.minecraft.client.Minecraft;
@@ -10,7 +11,7 @@ import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.components.WidgetSprites;
 import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.input.MouseButtonEvent;
-import net.minecraft.client.renderer.texture.TextureManager;
+import net.minecraft.client.renderer.texture.MissingTextureAtlasSprite;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.client.sounds.SoundManager;
 import net.minecraft.network.chat.CommonComponents;
@@ -150,14 +151,15 @@ public class CycleButton<T> extends Button {
         @Nullable WidgetSprites sprites = spritesMap.get(getCurrentValue());
         Identifier spriteLocation = sprites != null
                 ? sprites.get(isActive(), isHoveredOrFocused())
-                : TextureManager.INTENTIONAL_MISSING_TEXTURE;
+                : MissingTextureAtlasSprite.getLocation();
         guiGraphics.blitSprite(net.minecraft.client.renderer.RenderPipelines.GUI_TEXTURED, spriteLocation, getX(), getY(), getWidth(), getHeight());
     }
 
     @Override
     public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
-        if ((event.button() == 0 || event.button() == 1) && isMouseOver(event.x(), event.y())) {
-            cycle(event.button() == 1);
+        if ((event.button() == InputConstants.MOUSE_BUTTON_LEFT || event.button() == InputConstants.MOUSE_BUTTON_RIGHT)
+                && isMouseOver(event.x(), event.y())) {
+            cycle(event.button() == InputConstants.MOUSE_BUTTON_RIGHT);
             playDownSound(Minecraft.getInstance().getSoundManager());
             return true;
         }

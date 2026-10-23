@@ -18,7 +18,7 @@
       "on_false": {
         "type": "minecraft:condition", "property": "exposure:camera_selfie",
         "on_true": {
-          "type": "minecraft:composite", "models": [
+          "type": "exposure:shared_transform_composite", "models": [
             {
               "type": "minecraft:condition", "property": "exposure:camera_gold",
               "on_true": {"type": "minecraft:model", "model": "exposure:item/camera_gold_selfie", "tints": [{"type": "minecraft:constant", "value": -1}, {"type": "exposure:camera_glass"}]},
@@ -52,7 +52,7 @@
         "on_false": {
           "type": "minecraft:condition", "property": "exposure:camera_active",
           "on_true": {
-            "type": "minecraft:composite", "models": [
+            "type": "exposure:shared_transform_composite", "models": [
               {
                 "type": "minecraft:condition", "property": "exposure:camera_gold",
                 "on_true": {"type": "minecraft:model", "model": "exposure:item/camera_gold_active", "tints": [{"type": "minecraft:constant", "value": -1}, {"type": "exposure:camera_glass"}]},
@@ -84,7 +84,7 @@
             ]
           },
           "on_false": {
-            "type": "minecraft:composite", "models": [
+            "type": "exposure:shared_transform_composite", "models": [
               {
                 "type": "minecraft:condition", "property": "exposure:camera_gold",
                 "on_true": {"type": "minecraft:model", "model": "exposure:item/camera_gold", "tints": [{"type": "minecraft:constant", "value": -1}, {"type": "exposure:camera_glass"}]},

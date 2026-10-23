@@ -119,7 +119,7 @@ public class AlbumSigningScreen extends Screen {
     }
 
     protected void cancelSigning() {
-        Minecrft.get().setScreen(parentScreen);
+        Minecrft.get().gui.setScreen(parentScreen);
     }
 
     @Override

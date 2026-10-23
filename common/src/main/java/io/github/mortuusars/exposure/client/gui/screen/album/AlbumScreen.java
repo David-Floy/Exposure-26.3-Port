@@ -433,7 +433,7 @@ public class AlbumScreen extends AbstractContainerScreen<AlbumMenu> {
         if (isInAddingMode())
             return super.mouseDragged(event, dragX, dragY);
         else
-            return this.getFocused() != null && this.isDragging() && event.button() == 0
+            return this.getFocused() != null && this.isDragging() && event.button() == InputConstants.MOUSE_BUTTON_LEFT
                     && this.getFocused().mouseDragged(event, dragX, dragY);
     }
 
@@ -560,7 +560,7 @@ public class AlbumScreen extends AbstractContainerScreen<AlbumMenu> {
             clickButton(AlbumMenu.CANCEL_ADDING_PHOTO_BUTTON);
         }
 
-        Minecrft.get().setScreen(new AlbumSigningScreen(this));
+        Minecrft.get().gui.setScreen(new AlbumSigningScreen(this));
     }
 
     protected boolean isInAddingMode() {

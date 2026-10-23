@@ -8,6 +8,7 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.*;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.util.Prediction;
 import org.jetbrains.annotations.NotNull;
 
 public class LecternAlbumMenu extends AbstractContainerMenu {
@@ -88,7 +89,7 @@ public class LecternAlbumMenu extends AbstractContainerMenu {
                 ItemStack itemStack = this.container.removeItemNoUpdate(0);
                 this.container.setChanged();
                 if (!player.getInventory().add(itemStack)) {
-                    player.drop(itemStack, false);
+                    player.drop(itemStack, false, Prediction.PREDICTED);
                 }
 
                 return true;

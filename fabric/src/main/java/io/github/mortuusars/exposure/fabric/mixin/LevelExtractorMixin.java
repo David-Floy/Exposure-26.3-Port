@@ -4,13 +4,11 @@ import io.github.mortuusars.exposure.client.util.Minecrft;
 import io.github.mortuusars.exposure.world.entity.CameraStandEntity;
 import net.minecraft.client.Camera;
 import net.minecraft.client.DeltaTracker;
-import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.culling.Frustum;
-import net.minecraft.client.renderer.entity.EntityRenderDispatcher;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
+import net.minecraft.client.renderer.extract.LevelExtractor;
 import net.minecraft.client.renderer.state.level.LevelRenderState;
 import net.minecraft.world.entity.Entity;
-import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
@@ -18,14 +16,13 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-@Mixin(LevelRenderer.class)
-public abstract class LevelRendererMixin {
-    @Final
+/**
+ * 26.2 split level extraction out of {@code LevelRenderer}; {@code extractVisibleEntities} now lives here.
+ */
+@Mixin(LevelExtractor.class)
+public abstract class LevelExtractorMixin {
     @Shadow
-    private EntityRenderDispatcher entityRenderDispatcher;
-
-    @Shadow
-    protected abstract boolean shouldShowEntityOutlines();
+    protected abstract EntityRenderState extractEntity(Entity entity, float partialTickTime);
 
     @Inject(
             method = "extractVisibleEntities(Lnet/minecraft/client/Camera;Lnet/minecraft/client/renderer/culling/Frustum;Lnet/minecraft/client/DeltaTracker;Lnet/minecraft/client/renderer/state/level/LevelRenderState;)V",
@@ -47,11 +44,7 @@ public abstract class LevelRendererMixin {
 
         float partialTick = deltaTracker.getGameTimeDeltaPartialTick(
                 !Minecrft.level().tickRateManager().isEntityFrozen(entity));
-        EntityRenderState renderState = entityRenderDispatcher.extractEntity(entity, partialTick);
-        levelRenderState.entityRenderStates.add(renderState);
-
-        if (renderState.appearsGlowing() && shouldShowEntityOutlines()) {
-            levelRenderState.haveGlowingEntities = true;
-        }
+        // 26.3 derives entity outlines from the submitted features, so there is no glowing flag to set here.
+        levelRenderState.entityRenderStates.add(extractEntity(entity, partialTick));
     }
 }

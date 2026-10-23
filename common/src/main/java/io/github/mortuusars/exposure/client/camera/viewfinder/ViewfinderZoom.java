@@ -10,6 +10,7 @@ import io.github.mortuusars.exposure.world.camera.component.FocalRange;
 import io.github.mortuusars.exposure.client.util.ZoomDirection;
 import net.minecraft.client.input.KeyEvent;
 import net.minecraft.util.Mth;
+import org.lwjgl.sdl.SDLScancode;
 
 public class ViewfinderZoom {
     public static final float ZOOM_STEP = 8f;
@@ -71,7 +72,7 @@ public class ViewfinderZoom {
                 return true;
             }
 
-            if (event.key() == 333 /*KEY_SUBTRACT*/ || event.key() == InputConstants.KEY_MINUS) {
+            if (event.key() == SDLScancode.SDL_SCANCODE_KP_MINUS || event.key() == InputConstants.KEY_MINUS) {
                 zoom(ZoomDirection.OUT, event.hasShiftDown());
                 return true;
             }

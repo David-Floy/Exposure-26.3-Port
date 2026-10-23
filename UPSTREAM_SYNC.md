@@ -1,6 +1,6 @@
 # Upstream synchronization ledger
 
-Do not merge a newer `upstream/1.21.1` wholesale into `26.1.2`. Review upstream commits individually and port their business intent onto the 26.1.2 APIs. Preserve local rendering, packet, data, and lifecycle invariants unless the reviewed change explicitly requires a compatible adaptation.
+Do not merge a newer `upstream/1.21.1` wholesale into `26.3`. Review upstream commits individually and port their business intent onto the 26.3 APIs. Preserve local rendering, packet, data, and lifecycle invariants unless the reviewed change explicitly requires a compatible adaptation.
 
 | Upstream commit | Upstream change summary | Adopted? | Local corresponding commit | 26.1.2 adaptation | Reason not adopted | Validation |
 |---|---|---|---|---|---|---|

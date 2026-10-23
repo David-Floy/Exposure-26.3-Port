@@ -1,5 +1,6 @@
 package io.github.mortuusars.exposure.client.gui.screen.camera;
 
+import com.mojang.blaze3d.Blaze3D;
 import com.mojang.blaze3d.platform.InputConstants;
 import io.github.mortuusars.exposure.Config;
 import io.github.mortuusars.exposure.Exposure;
@@ -18,7 +19,6 @@ import io.github.mortuusars.exposure.data.Filters;
 import io.github.mortuusars.exposure.world.inventory.AbstractCameraAttachmentsMenu;
 import io.github.mortuusars.exposure.world.inventory.CameraInHandAttachmentsMenu;
 import net.minecraft.ChatFormatting;
-import net.minecraft.util.Util;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
@@ -43,6 +43,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.NotNull;
 
+import java.net.URI;
 import java.util.*;
 import java.util.function.Supplier;
 
@@ -89,11 +90,11 @@ public class CameraAttachmentsScreen extends AbstractContainerScreen<AbstractCam
 
     protected void showTutorialToasts() {
         if (Config.Client.ATTACHMENTS_SHOW_INFO_TOAST.get()) {
-            Minecrft.get().getToastManager().addToast(new BetterTutorialToast(ToastIcon.HOVER,
+            Minecrft.get().gui.toastManager().addToast(new BetterTutorialToast(ToastIcon.HOVER,
                     Component.translatable("gui.exposure.camera_attachments.mouse_over_toast.title"),
                     Component.translatable("gui.exposure.camera_attachments.mouse_over_toast.message"),
                     () -> {
-                        if (Minecrft.get().screen != this) {
+                        if (Minecrft.get().gui.screen() != this) {
                             // Show again on next open:
                             Config.Client.ATTACHMENTS_SHOW_INFO_TOAST.set(true);
                             Config.Client.SPEC.save();
@@ -105,11 +106,11 @@ public class CameraAttachmentsScreen extends AbstractContainerScreen<AbstractCam
             Config.Client.SPEC.save();
         }
         if (Config.Client.ATTACHMENTS_SHOW_WIKI_TOAST.get()) {
-            Minecrft.get().getToastManager().addToast(new BetterTutorialToast(ToastIcon.F1,
+            Minecrft.get().gui.toastManager().addToast(new BetterTutorialToast(ToastIcon.F1,
                     Component.translatable("gui.exposure.camera_attachments.wiki_toast.title"),
                     Component.translatable("gui.exposure.camera_attachments.wiki_toast.message"),
                     BetterTutorialToast.DEFAULT_SHOW_DURATION_MS, () -> {
-                if (Minecrft.get().screen != this && !(Minecrft.get().screen instanceof ConfirmLinkScreen)) {
+                if (Minecrft.get().gui.screen() != this && !(Minecrft.get().gui.screen() instanceof ConfirmLinkScreen)) {
                     // Show again on next open:
                     Config.Client.ATTACHMENTS_SHOW_WIKI_TOAST.set(true);
                     Config.Client.SPEC.save();
@@ -315,14 +316,14 @@ public class CameraAttachmentsScreen extends AbstractContainerScreen<AbstractCam
     @Override
     public boolean keyPressed(KeyEvent event) {
         if (event.key() == InputConstants.KEY_F1) {
-            String url = "https://moddedmc.wiki/project/exposure";
-            Minecrft.get().setScreen(new ConfirmLinkScreen(confirmed -> {
+            URI url = URI.create("https://moddedmc.wiki/project/exposure");
+            Minecrft.get().gui.setScreen(new ConfirmLinkScreen(confirmed -> {
                 if (confirmed) {
-                    Util.getPlatform().openUri(url);
+                    Blaze3D.openUri(url);
                 }
 
-                Minecrft.get().setScreen(this);
-            }, "https://moddedmc.wiki/project/exposure", true));
+                Minecrft.get().gui.setScreen(this);
+            }, url, true));
             return true;
         }
 
@@ -341,7 +342,7 @@ public class CameraAttachmentsScreen extends AbstractContainerScreen<AbstractCam
             }
 
             ItemListScreen screen = new ItemListScreen(this, Component.translatable("gui.exposure.filters"), itemStacks);
-            Minecraft.getInstance().setScreen(screen);
+            Minecraft.getInstance().gui.setScreen(screen);
 
             return true;
         } else if (isMouseOver(lens, x, y) || isMouseOver(lensBuiltIn, x, y)) {
@@ -351,7 +352,7 @@ public class CameraAttachmentsScreen extends AbstractContainerScreen<AbstractCam
             }
 
             ItemListScreen screen = new ItemListScreen(this, Component.translatable("gui.exposure.lenses"), itemStacks);
-            Minecrft.get().setScreen(screen);
+            Minecrft.get().gui.setScreen(screen);
             return true;
         } else if (isMouseOver(film, x, y)) {
             List<ItemStack> itemStacks = new ArrayList<>();
@@ -360,7 +361,7 @@ public class CameraAttachmentsScreen extends AbstractContainerScreen<AbstractCam
             }
 
             ItemListScreen screen = new ItemListScreen(this, Component.translatable("gui.exposure.film_rolls"), itemStacks);
-            Minecrft.get().setScreen(screen);
+            Minecrft.get().gui.setScreen(screen);
             return true;
         }
 
@@ -371,7 +372,7 @@ public class CameraAttachmentsScreen extends AbstractContainerScreen<AbstractCam
     public void onClose() {
         super.onClose();
         if (getMenu() instanceof CameraInHandAttachmentsMenu attachmentsMenu && attachmentsMenu.isOpenedFromGui()) {
-            Minecrft.get().setScreen(new InventoryScreen(player));
+            Minecrft.get().gui.setScreen(new InventoryScreen(player));
         }
     }
 

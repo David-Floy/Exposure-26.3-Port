@@ -1,6 +1,7 @@
 package io.github.mortuusars.exposure.fabric;
 
 import com.mojang.brigadier.arguments.ArgumentType;
+import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import io.github.mortuusars.exposure.Exposure;
 import io.github.mortuusars.exposure.Register;
@@ -8,8 +9,8 @@ import io.netty.buffer.Unpooled;
 import net.fabricmc.fabric.api.command.v2.ArgumentTypeRegistry;
 import net.fabricmc.fabric.api.menu.v1.ExtendedMenuType;
 import net.fabricmc.fabric.api.object.builder.v1.block.entity.FabricBlockEntityTypeBuilder;
-import net.minecraft.advancements.CriterionTrigger;
-import net.minecraft.advancements.criterion.EntitySubPredicate;
+import net.minecraft.advancements.triggers.CriterionTrigger;
+import net.minecraft.advancements.predicates.entity.EntitySubPredicate;
 import net.minecraft.commands.synchronization.ArgumentTypeInfo;
 import net.minecraft.core.Registry;
 import net.minecraft.core.component.DataComponentType;
@@ -39,7 +40,6 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.levelgen.feature.Feature;
-import net.minecraft.world.level.levelgen.feature.configurations.FeatureConfiguration;
 
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -136,8 +136,8 @@ public class RegisterImpl implements Register.Service {
         return () -> obj;
     }
 
-    public <T extends EntitySubPredicate> Supplier<MapCodec<T>> entitySubPredicate(String name, Supplier<MapCodec<T>> supplier) {
-        MapCodec<T> obj = Registry.register(BuiltInRegistries.ENTITY_SUB_PREDICATE_TYPE, Exposure.resource(name), supplier.get());
+    public <T extends EntitySubPredicate> Supplier<Codec<T>> entitySubPredicate(String name, Supplier<Codec<T>> supplier) {
+        Codec<T> obj = Registry.register(BuiltInRegistries.ENTITY_SUB_PREDICATE_TYPE, Exposure.resource(name), supplier.get());
         return () -> obj;
     }
 
@@ -147,9 +147,9 @@ public class RegisterImpl implements Register.Service {
         return () -> argumentTypeInfo;
     }
 
-    public <T extends FeatureConfiguration> Supplier<Feature<?>> worldGenFeature(String name, Supplier<Feature<T>> featureSupplier) {
-        Feature<T> feature = Registry.register(BuiltInRegistries.FEATURE, name, featureSupplier.get());
-        return () -> feature;
+    public <T extends Feature> Supplier<MapCodec<T>> worldGenFeatureType(String name, Supplier<MapCodec<T>> featureTypeSupplier) {
+        MapCodec<T> featureType = Registry.register(BuiltInRegistries.FEATURE_TYPE, Exposure.resource(name), featureTypeSupplier.get());
+        return () -> featureType;
     }
 
     public <T> DataComponentType<T> dataComponentType(String name, Consumer<DataComponentType.Builder<T>> builderConsumer) {

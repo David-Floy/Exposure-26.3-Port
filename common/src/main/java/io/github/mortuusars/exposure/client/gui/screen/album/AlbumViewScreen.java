@@ -257,7 +257,7 @@ public class AlbumViewScreen extends Screen {
             return;
         }
 
-        Minecrft.get().setScreen(new ChildPhotographScreen(this, List.of(new ItemAndStack<>(photograph))));
+        Minecrft.get().gui.setScreen(new ChildPhotographScreen(this, List.of(new ItemAndStack<>(photograph))));
         Minecrft.get().getSoundManager()
                 .play(SimpleSoundInstance.forUI(Exposure.SoundEvents.PHOTOGRAPH_RUSTLE.get(),
                         Minecrft.level().getRandom().nextFloat() * 0.2f + 1.3f, 0.75f));

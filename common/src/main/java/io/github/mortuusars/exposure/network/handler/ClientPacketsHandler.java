@@ -56,7 +56,7 @@ public class ClientPacketsHandler {
     public static void showExposure(ShowExposureCommandS2CP packet) {
         if (packet.negative()) {
             Screen screen = new FilmFrameInspectScreen(packet.frames());
-            Minecrft.get().setScreen(screen);
+            Minecrft.get().gui.setScreen(screen);
             return;
         }
 
@@ -68,7 +68,7 @@ public class ClientPacketsHandler {
         Collections.reverse(photographs);
 
         Screen screen = new PhotographScreen(photographs);
-        Minecrft.get().setScreen(screen);
+        Minecrft.get().gui.setScreen(screen);
     }
 
     public static void exportExposures(ExportS2CP packet) {

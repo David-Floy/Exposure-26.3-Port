@@ -5,6 +5,7 @@ import net.minecraft.client.Options;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.multiplayer.MultiPlayerGameMode;
 import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.client.server.IntegratedServer;
 import net.minecraft.core.RegistryAccess;
 
 import java.util.Objects;
@@ -32,6 +33,14 @@ public class Minecrft {
 
     public static Options options() {
         return get().options;
+    }
+
+    /**
+     * Same check as the {@code Minecraft#isSingleplayer} removed in 26.3: an integrated server that is not opened to LAN.
+     */
+    public static boolean isSingleplayer() {
+        IntegratedServer server = get().getSingleplayerServer();
+        return server != null && !server.isPublished();
     }
 
     public static void execute(Runnable runnable) {

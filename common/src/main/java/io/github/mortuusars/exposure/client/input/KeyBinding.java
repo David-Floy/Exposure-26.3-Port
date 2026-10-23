@@ -7,7 +7,7 @@ import java.util.function.*;
 
 public record KeyBinding(Key matcher, Supplier<Boolean> handler) {
     public boolean keyPressed(KeyEvent event) {
-        return keyPressed(event.key(), event.scancode(), event.modifiers());
+        return keyPressed(event.key(), event.keycode(), event.modifiers());
     }
 
     public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
@@ -15,7 +15,7 @@ public record KeyBinding(Key matcher, Supplier<Boolean> handler) {
     }
 
     public boolean keyReleased(KeyEvent event) {
-        return keyReleased(event.key(), event.scancode(), event.modifiers());
+        return keyReleased(event.key(), event.keycode(), event.modifiers());
     }
 
     public boolean keyReleased(int keyCode, int scanCode, int modifiers) {

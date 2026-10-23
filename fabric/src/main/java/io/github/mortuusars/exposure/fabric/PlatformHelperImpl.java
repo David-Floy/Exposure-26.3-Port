@@ -12,6 +12,9 @@ import io.netty.buffer.Unpooled;
 import net.fabricmc.fabric.api.menu.v1.ExtendedMenuProvider;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Holder;
+import net.minecraft.core.component.BlockTransformer;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
@@ -22,9 +25,9 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
-import net.minecraft.world.item.AxeItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.ShearsItem;
+import net.minecraft.world.item.component.BlockTransformers;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -41,7 +44,9 @@ public class PlatformHelperImpl implements io.github.mortuusars.exposure.Platfor
     }
 
     public boolean canStrip(ItemStack stack) {
-        return stack.getItem() instanceof AxeItem;
+        // 26.3 removed AxeItem; stripping is now the vanilla axe block transformer component.
+        Holder<BlockTransformer> transformer = stack.get(DataComponents.BLOCK_TRANSFORMER);
+        return transformer != null && transformer.is(BlockTransformers.AXE);
     }
 
     public void openMenu(ServerPlayer serverPlayer, MenuProvider menuProvider, Consumer<RegistryFriendlyByteBuf> extraDataWriter) {

@@ -15,10 +15,10 @@ public class BuggerKeyboardHandlerMixin {
     @Inject(method = "keyPress", at = @At(value = "RETURN"), cancellable = true)
     private void keyPress(long windowPointer, int action, KeyEvent event, CallbackInfo ci) {
         if (!PlatformHelper.isInDevEnv()) return;
-        if (!Minecraft.getInstance().gui.getDebugOverlay().showDebugScreen()) return;
-        if (Minecraft.getInstance().screen != null) return;
-        if (action == InputConstants.PRESS && Bugger.onKeyPress(event.key(), event.scancode(), event.modifiers())) ci.cancel();
-        if (action == InputConstants.REPEAT && Bugger.onKeyRepeat(event.key(), event.scancode(), event.modifiers())) ci.cancel();
-        if (action == InputConstants.RELEASE && Bugger.onKeyRelease(event.key(), event.scancode(), event.modifiers())) ci.cancel();
+        if (!Bugger.isDebugScreenOpen()) return;
+        if (Minecraft.getInstance().gui.screen() != null) return;
+        if (action == InputConstants.PRESS && Bugger.onKeyPress(event.key(), event.keycode(), event.modifiers())) ci.cancel();
+        if (action == InputConstants.REPEAT && Bugger.onKeyRepeat(event.key(), event.keycode(), event.modifiers())) ci.cancel();
+        if (action == InputConstants.RELEASE && Bugger.onKeyRelease(event.key(), event.keycode(), event.modifiers())) ci.cancel();
     }
 }

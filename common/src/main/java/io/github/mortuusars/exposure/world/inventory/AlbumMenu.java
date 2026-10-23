@@ -1,7 +1,6 @@
 package io.github.mortuusars.exposure.world.inventory;
 
 import com.google.common.base.Preconditions;
-import com.mojang.blaze3d.platform.InputConstants;
 import io.github.mortuusars.exposure.Exposure;
 import io.github.mortuusars.exposure.util.PagingDirection;
 import io.github.mortuusars.exposure.world.inventory.slot.AlbumPhotographSlot;
@@ -19,6 +18,7 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.*;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.util.Prediction;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -27,6 +27,12 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 
 public class AlbumMenu extends AbstractContainerMenu {
+    /**
+     * Container click protocol value of the primary (left) button. This is not an input code: 26.3 SDL input
+     * codes differ (InputConstants.MOUSE_BUTTON_LEFT is 1), and AbstractContainerScreen maps them back to 0.
+     */
+    private static final int CONTAINER_CLICK_PRIMARY_BUTTON = 0;
+
     public static final int CANCEL_ADDING_PHOTO_BUTTON = -1;
     public static final int PREVIOUS_PAGE_BUTTON = PagingDirection.PREVIOUS.ordinal();
     public static final int NEXT_PAGE_BUTTON = PagingDirection.NEXT.ordinal();
@@ -54,7 +60,7 @@ public class AlbumMenu extends AbstractContainerMenu {
         put(CANCEL_ADDING_PHOTO_BUTTON, p -> {
             sideBeingAddedTo = null;
             if (!getCarried().isEmpty()) {
-                p.getInventory().placeItemBackInInventory(getCarried());
+                p.getInventory().placeItemBackInInventory(getCarried(), Prediction.PREDICTED);
                 setCarried(ItemStack.EMPTY);
             }
             updatePlayerInventorySlots();
@@ -289,7 +295,7 @@ public class AlbumMenu extends AbstractContainerMenu {
         else {
             ItemStack stack = slot.getItem();
             if (!player.getInventory().add(stack))
-                player.drop(stack, false);
+                player.drop(stack, false, Prediction.PREDICTED);
 
             slot.set(ItemStack.EMPTY);
         }
@@ -309,7 +315,7 @@ public class AlbumMenu extends AbstractContainerMenu {
         Slot slot = slots.get(slotId);
         ItemStack stack = slot.getItem();
 
-        if (button == InputConstants.MOUSE_BUTTON_LEFT
+        if (button == CONTAINER_CLICK_PRIMARY_BUTTON
                 && slot instanceof AlbumPlayerInventorySlot
                 && stack.getItem() instanceof PhotographItem
                 && getCarried().isEmpty()) {

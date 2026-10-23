@@ -1,9 +1,10 @@
 package io.github.mortuusars.exposure;
 
 import com.mojang.brigadier.arguments.ArgumentType;
+import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
-import net.minecraft.advancements.CriterionTrigger;
-import net.minecraft.advancements.criterion.EntitySubPredicate;
+import net.minecraft.advancements.triggers.CriterionTrigger;
+import net.minecraft.advancements.predicates.entity.EntitySubPredicate;
 import net.minecraft.commands.synchronization.ArgumentTypeInfo;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.component.DataComponentType;
@@ -30,7 +31,6 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.feature.Feature;
-import net.minecraft.world.level.levelgen.feature.configurations.FeatureConfiguration;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.function.Consumer;
@@ -122,7 +122,7 @@ public class Register {
         return service().itemSubPredicate(name, supplier);
     }
 
-    public static <T extends EntitySubPredicate> Supplier<MapCodec<T>> entitySubPredicate(String name, Supplier<MapCodec<T>> supplier) {
+    public static <T extends EntitySubPredicate> Supplier<Codec<T>> entitySubPredicate(String name, Supplier<Codec<T>> supplier) {
         return service().entitySubPredicate(name, supplier);
     }
 
@@ -131,8 +131,9 @@ public class Register {
         return service().commandArgumentType(id, infoClass, argumentTypeInfo);
     }
 
-    public static <T extends FeatureConfiguration> Supplier<Feature<?>> worldGenFeature(String name, Supplier<Feature<T>> featureSupplier) {
-        return service().worldGenFeature(name, featureSupplier);
+    /** 26.3 features are data-driven; code registers the feature type codec instead of a Feature instance. */
+    public static <T extends Feature> Supplier<MapCodec<T>> worldGenFeatureType(String name, Supplier<MapCodec<T>> featureTypeSupplier) {
+        return service().worldGenFeatureType(name, featureTypeSupplier);
     }
 
     public static <T> DataComponentType<T> dataComponentType(String name, Consumer<DataComponentType.Builder<T>> builderConsumer) {
@@ -163,10 +164,10 @@ public class Register {
         <T extends CriterionTrigger<?>> Supplier<T> criterionTrigger(String name, Supplier<T> supplier);
         <T extends DataComponentPredicate> Supplier<DataComponentPredicate.Type<T>> itemSubPredicate(
                 String name, Supplier<DataComponentPredicate.Type<T>> supplier);
-        <T extends EntitySubPredicate> Supplier<MapCodec<T>> entitySubPredicate(String name, Supplier<MapCodec<T>> supplier);
+        <T extends EntitySubPredicate> Supplier<Codec<T>> entitySubPredicate(String name, Supplier<Codec<T>> supplier);
         <A extends ArgumentType<?>, T extends ArgumentTypeInfo.Template<A>, I extends ArgumentTypeInfo<A, T>>
         Supplier<ArgumentTypeInfo<A, T>> commandArgumentType(String id, Class<A> infoClass, I argumentTypeInfo);
-        <T extends FeatureConfiguration> Supplier<Feature<?>> worldGenFeature(String name, Supplier<Feature<T>> featureSupplier);
+        <T extends Feature> Supplier<MapCodec<T>> worldGenFeatureType(String name, Supplier<MapCodec<T>> featureTypeSupplier);
         <T> DataComponentType<T> dataComponentType(String name, Consumer<DataComponentType.Builder<T>> builderConsumer);
         <T extends ParticleType<? extends ParticleOptions>> Supplier<T> particleType(String name, Supplier<T> supplier);
     }

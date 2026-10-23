@@ -48,7 +48,7 @@ public class ViewfinderShader implements AutoCloseable {
     public void process() {
         Identifier location = shaderLocation;
         if (location != null && active) {
-            Shader.process(location, minecraft.getMainRenderTarget());
+            Shader.process(location, minecraft.gameRenderer.mainRenderTarget());
         }
     }
 

@@ -18,18 +18,18 @@ public class SetPostEffectAction implements CaptureAction {
 
     @Override
     public void beforeCapture() {
-        this.currentEffect = Minecrft.get().gameRenderer.currentPostEffect();
-        this.effectActive = Minecrft.get().gameRenderer.effectActive;
+        this.currentEffect = Minecrft.get().gameRenderer.spectatedEntityPostEffect();
+        this.effectActive = Minecrft.get().gameRenderer.spectatedEntityEffectActive;
 
         Shader.applyToGameRenderer(effect);
     }
 
     @Override
     public void afterCapture() {
-        Minecrft.get().gameRenderer.effectActive = effectActive;
+        Minecrft.get().gameRenderer.spectatedEntityEffectActive = effectActive;
         if (currentEffect != null) {
             Shader.applyToGameRenderer(currentEffect);
-            Minecrft.get().gameRenderer.effectActive = effectActive;
+            Minecrft.get().gameRenderer.spectatedEntityEffectActive = effectActive;
         } else {
             Shader.clearGameRendererEffect();
         }

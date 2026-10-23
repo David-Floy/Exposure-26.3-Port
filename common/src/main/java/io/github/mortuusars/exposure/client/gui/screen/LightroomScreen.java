@@ -35,7 +35,6 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.input.MouseButtonEvent;
-import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.Rect2i;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.network.chat.CommonComponents;
@@ -367,12 +366,12 @@ public class LightroomScreen extends AbstractContainerScreen<LightroomMenu> {
     public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
         double mouseX = event.x();
         double mouseY = event.y();
-        if (event.button() == 0) {
+        if (event.button() == InputConstants.MOUSE_BUTTON_LEFT) {
             Slot filmSlot = getMenu().getSlot(Lightroom.FILM_SLOT);
             if (!hasShownDevelopingToast && !filmSlot.hasItem()
                     && isHovering(filmSlot.x, filmSlot.y, 16, 16, mouseX, mouseY)
                     && getMenu().getCarried().getItem() instanceof FilmRollItem) {
-                Minecrft.get().getToastManager().addToast(new BetterTutorialToast(ToastIcon.HEADS_UP,
+                Minecrft.get().gui.toastManager().addToast(new BetterTutorialToast(ToastIcon.HEADS_UP,
                         Component.translatable("gui.exposure.lightroom.toast.develop_film.title"),
                         null, BetterTutorialToast.DEFAULT_SHOW_DURATION_MS));
                 hasShownDevelopingToast = true;
@@ -416,7 +415,7 @@ public class LightroomScreen extends AbstractContainerScreen<LightroomMenu> {
     }
 
     private void enterFrameInspectMode() {
-        Minecraft.getInstance().setScreen(new LightroomFrameInspectScreen(this));
+        Minecraft.getInstance().gui.setScreen(new LightroomFrameInspectScreen(this));
         player.playSound(Exposure.SoundEvents.CAMERA_LENS_RING_CLICK.get(), 1f, 1.3f);
     }
 

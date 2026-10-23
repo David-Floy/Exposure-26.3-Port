@@ -2,9 +2,9 @@ package io.github.mortuusars.exposure.client.render.image;
 
 import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.textures.FilterMode;
-import com.mojang.blaze3d.textures.GpuTexture;
-import com.mojang.blaze3d.textures.TextureFormat;
+import com.mojang.renderpearl.api.GpuFormat;
+import com.mojang.renderpearl.api.textures.FilterMode;
+import com.mojang.renderpearl.api.textures.GpuTexture;
 import io.github.mortuusars.exposure.Exposure;
 import net.minecraft.client.renderer.texture.AbstractTexture;
 import net.minecraft.client.renderer.texture.SpriteContents;
@@ -73,7 +73,7 @@ final class MipmappedDynamicTexture extends AbstractTexture {
 
     private void createTexture() {
         int usage = GpuTexture.USAGE_COPY_DST | GpuTexture.USAGE_TEXTURE_BINDING;
-        texture = RenderSystem.getDevice().createTexture(label, usage, TextureFormat.RGBA8,
+        texture = RenderSystem.getDevice().createTexture(label, usage, GpuFormat.RGBA8_UNORM,
                 width(), height(), 1, mipLevels + 1);
         textureView = RenderSystem.getDevice().createTextureView(texture);
         // The old TextureStateShard used blur=false and mipmap=true.  Its

@@ -13,7 +13,7 @@ import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.layers.PlayerItemInHandLayer;
 import net.minecraft.client.renderer.entity.state.AvatarRenderState;
 import net.minecraft.client.renderer.item.ItemStackRenderState;
-import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.SwingAnimationType;
@@ -38,17 +38,20 @@ public abstract class PlayerItemInHandLayerMixin {
         EntityModel<AvatarRenderState> parentModel =
                 (EntityModel<AvatarRenderState>) ((PlayerItemInHandLayer<?, ?>) (Object) this).getParentModel();
         ((ArmedModel<AvatarRenderState>) parentModel).translateToHand(state, arm, poseStack);
-        poseStack.mulPose(Axis.XP.rotationDegrees(-90));
-        poseStack.mulPose(Axis.YP.rotationDegrees(180));
+        poseStack.rotate(Axis.XP.rotationDegrees(-90));
+        poseStack.rotate(Axis.YP.rotationDegrees(180));
 
-        boolean babyOffset = state.isBaby && state.entityType != EntityType.ARMOR_STAND;
+        boolean babyOffset = state.isBaby && state.entityType != EntityTypes.ARMOR_STAND;
         float offsetX = babyOffset ? 0 : 1;
         float offsetY = babyOffset ? 1 : 2;
         float offsetZ = babyOffset ? -4.5f : -10;
         poseStack.translate((arm == HumanoidArm.LEFT ? -1 : 1) * offsetX / 16f,
                 offsetY / 16f, offsetZ / 16f);
 
-        if (state.attackTime > 0 && state.attackArm == arm && state.swingAnimationType == SwingAnimationType.STAB) {
+        // 26.3 merged attackTime/attackArm/swingAnimationType into ArmedEntityRenderState#currentSwing.
+        if (state.currentSwing != null
+                && state.currentSwing.hand().asArm(state.mainArm) == arm
+                && state.currentSwing.animation().type() == SwingAnimationType.STAB) {
             SpearAnimations.thirdPersonAttackItem(state, poseStack);
         }
         float ticksUsingItem = state.ticksUsingItem(arm);

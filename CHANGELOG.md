@@ -1,5 +1,21 @@
 # Changelog
 
+## [1.9.18-port.1+mc26.3] - Unreleased
+
+### Changed
+
+- Ported the unofficial Fabric port of Exposure 1.9.18 from Minecraft 26.1.2 to Minecraft 26.3 (Java 25, Fabric Loader 0.19.5, Fabric API 0.164.0+26.3, Forge Config API Port 26.3.1, Gradle 9.7.1, Loom 1.18.4).
+- Background Capture follows the 26.3 frame lifecycle: the main render target moved to `GameRenderer`, the redirect now covers only the capture frame itself, and the sky (cached by 26.3's `SkyRenderer`) is drawn into the photograph.
+- Input follows the SDL3 key, mouse-button and modifier codes of 26.3; Album text boxes report text input focus as SDL requires.
+- Loot tables and advancements use the 26.3 datapack formats (loot `condition`/`modifier` holders, typed entity sub-predicates, `recipes` for recipe unlocks).
+- The Exposure colour filter shader uses standard std140 uniform offsets and the SPIR-V shader conventions of 26.3.
+
+### Fixed
+
+- The lightroom recipe advancement now requires developed film; its legacy `tag` item predicate key had been ignored, so any inventory change unlocked it.
+- Camera attachments (flash, lens, viewfinder, selfie stick) are drawn in place again on dropped and held cameras and in item frames. Since the 26.1.2 port each attachment used its own, undefined display transform; the camera item definition now uses the new `exposure:shared_transform_composite` item model type, which applies the camera body's transform to all layers.
+- Development builds only: the internal Bugger debug pages and their `[<-] and [->] to switch pages` hint are shown only while the F3 debug screen is open, as upstream. Since the 26.1.2 port the hint was drawn on every frame, and the arrow keys did nothing without F3.
+
 ## [1.9.18-port.2+mc26.1.2] - 2026-08-10
 
 ### Fixed

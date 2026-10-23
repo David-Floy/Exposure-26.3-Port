@@ -58,6 +58,16 @@ public class TextBox extends AbstractWidget {
         ++frameTick;
     }
 
+    /**
+     * 26.3 (SDL) only delivers typed characters while a widget holds text input focus, so focus changes are
+     * reported like vanilla's EditBox and MultiLineEditBox do. A TextBox is only created for editable text.
+     */
+    @Override
+    public void setFocused(boolean focused) {
+        super.setFocused(focused);
+        Minecraft.getInstance().onTextInputFocusChange(this, focused);
+    }
+
     public Font getFont() {
         return font;
     }
@@ -228,7 +238,7 @@ public class TextBox extends AbstractWidget {
 
     @Override
     public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
-        if (isHovered && visible && isActive() && event.button() == 0) {
+        if (isHovered && visible && isActive() && event.button() == InputConstants.MOUSE_BUTTON_LEFT) {
             long currentTime = Util.getMillis();
             DisplayCache displayCache = getDisplayCache();
             int index = displayCache.getIndexAtPosition(font, convertScreenToLocal(new Pos2i((int) event.x(), (int) event.y())));
@@ -256,7 +266,7 @@ public class TextBox extends AbstractWidget {
 
     @Override
     public boolean mouseDragged(MouseButtonEvent event, double dragX, double dragY) {
-        if (event.button() == 0) {
+        if (event.button() == InputConstants.MOUSE_BUTTON_LEFT) {
             DisplayCache displayCache = this.getDisplayCache();
             int index = displayCache.getIndexAtPosition(this.font, this.convertScreenToLocal(new Pos2i((int) event.x(), (int) event.y())));
             this.textFieldHelper.setCursorPos(index, true);

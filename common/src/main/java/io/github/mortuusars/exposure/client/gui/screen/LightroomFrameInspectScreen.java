@@ -36,7 +36,7 @@ public class LightroomFrameInspectScreen extends FilmFrameInspectScreen {
         super.extractRenderState(guiGraphics, mouseX, mouseY, partialTick);
 
         if (zoom.get() < zoom.getMin() + 0.1f && zoom.getTarget() < zoom.getMin() + 0.1f) {
-            Minecrft.get().setScreen(lightroomScreen);
+            Minecrft.get().gui.setScreen(lightroomScreen);
             Minecrft.player().playSound(Exposure.SoundEvents.CAMERA_LENS_RING_CLICK.get(), 1f, 0.7f);
         }
     }

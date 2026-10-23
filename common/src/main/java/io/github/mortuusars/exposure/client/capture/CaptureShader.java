@@ -40,7 +40,7 @@ public final class CaptureShader {
     public static void process() {
         Identifier location = shaderLocation;
         if (location != null) {
-            Shader.process(location, Minecrft.get().getMainRenderTarget());
+            Shader.process(location, Minecrft.get().gameRenderer.mainRenderTarget());
         }
     }
 

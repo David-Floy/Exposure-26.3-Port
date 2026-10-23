@@ -6,8 +6,10 @@ import io.github.mortuusars.exposure.advancements.predicate.CameraPredicate;
 import io.github.mortuusars.exposure.advancements.predicate.FramePredicate;
 import io.github.mortuusars.exposure.world.camera.frame.Frame;
 import io.github.mortuusars.exposure.world.entity.CameraHolder;
-import net.minecraft.advancements.criterion.*;
+import net.minecraft.advancements.predicates.LocationPredicate;
+import net.minecraft.advancements.triggers.SimpleCriterionTrigger;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Holder;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
@@ -17,6 +19,7 @@ import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.LootParams;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
+import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
@@ -38,17 +41,18 @@ public class FrameExposedTrigger extends SimpleCriterionTrigger<FrameExposedTrig
                 triggerInstance.matches(player, cameraHolder, cameraStack, frame, locationsInFrame, entitiesInFrame));
     }
 
-    public record TriggerInstance(Optional<ContextAwarePredicate> player,
+    public record TriggerInstance(Optional<Holder<LootItemCondition>> player,
                                   Optional<CameraPredicate> camera,
                                   Optional<FramePredicate> frame,
                                   Optional<LocationPredicate> locationInFrame,
-                                  Optional<List<ContextAwarePredicate>> entitiesInFrame) implements SimpleCriterionTrigger.SimpleInstance {
+                                  Optional<List<Holder<LootItemCondition>>> entitiesInFrame) implements SimpleCriterionTrigger.SimpleInstance {
+        // 26.3 replaced ContextAwarePredicate with a single (inline or referenced) loot condition.
         public static final Codec<TriggerInstance> CODEC = RecordCodecBuilder.create(instance -> instance.group(
-                        EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("player").forGetter(TriggerInstance::player),
+                        LootItemCondition.CODEC.optionalFieldOf("player").forGetter(TriggerInstance::player),
                         CameraPredicate.CODEC.optionalFieldOf("camera").forGetter(TriggerInstance::camera),
                         FramePredicate.CODEC.optionalFieldOf("frame").forGetter(TriggerInstance::frame),
                         LocationPredicate.CODEC.optionalFieldOf("location_in_frame").forGetter(TriggerInstance::locationInFrame),
-                        EntityPredicate.ADVANCEMENT_CODEC.listOf().optionalFieldOf("entities_in_frame").forGetter(TriggerInstance::entitiesInFrame))
+                        LootItemCondition.CODEC.listOf().optionalFieldOf("entities_in_frame").forGetter(TriggerInstance::entitiesInFrame))
                 .apply(instance, TriggerInstance::new));
 
         public boolean matches(ServerPlayer player,
@@ -72,7 +76,7 @@ public class FrameExposedTrigger extends SimpleCriterionTrigger<FrameExposedTrig
             return this.entitiesInFrame.isEmpty() || this.entitiesInFrame.get().stream().allMatch(predicate ->
                     entitiesInFrame.stream().anyMatch(entity -> {
                         LootContext context = createContextForHolder(player.level(), cameraHolder, entity);
-                        return predicate.matches(context);
+                        return predicate.value().test(context);
                     }));
         }
 

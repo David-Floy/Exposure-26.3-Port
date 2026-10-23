@@ -1,19 +1,19 @@
 #version 330
+#extension GL_ARB_separate_shader_objects : require
 
 uniform sampler2D DiffuseSampler;
 
-in vec2 texCoord;
+layout(location = 0) in vec2 texCoord;
 
+// 26.3 writes a vec3 uniform as 12 bytes (standard std140), so the scalars pack directly after Add.
 layout(std140) uniform ColorConfig {
     vec3 Mul;
-    float _PaddingAfterMul;
     vec3 Add;
-    float _PaddingAfterAdd;
     float Saturation;
     float Contrast;
 };
 
-out vec4 fragColor;
+layout(location = 0) out vec4 fragColor;
 
 // Duplicate of the legacy color-convolve pass with Exposure's contrast control.
 void main() {

@@ -42,7 +42,7 @@ import io.github.mortuusars.exposure.world.item.crafting.recipe.PhotographAgingR
 import io.github.mortuusars.exposure.world.item.crafting.recipe.PhotographCopyingRecipe;
 import io.github.mortuusars.exposure.world.item.crafting.recipe.serializer.ComponentTransferringRecipeSerializer;
 import io.github.mortuusars.exposure.world.item.util.ItemAndStack;
-import net.minecraft.advancements.criterion.PlayerTrigger;
+import net.minecraft.advancements.triggers.PlayerTrigger;
 import net.minecraft.commands.synchronization.ArgumentTypeInfo;
 import net.minecraft.commands.synchronization.SingletonArgumentInfo;
 import net.minecraft.core.Registry;
@@ -532,7 +532,7 @@ public class Exposure {
     }
 
     public static class EntitySubPredicates {
-        public static final Supplier<MapCodec<TamedPredicate>> TAMED = Register.entitySubPredicate("tamed", () -> TamedPredicate.CODEC);
+        public static final Supplier<Codec<TamedPredicate>> TAMED = Register.entitySubPredicate("tamed", () -> TamedPredicate.CODEC);
 
         public static void init() {
         }

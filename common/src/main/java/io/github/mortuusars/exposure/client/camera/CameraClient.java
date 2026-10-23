@@ -53,11 +53,11 @@ public class CameraClient {
     public static void setCameraEntity(Entity entity) {
         // Do not use Minecraft#setCameraEntity: it also changes the entity post effect.
         // Camera owns the render entity directly in 26.1.2.
-        Minecrft.get().gameRenderer.getMainCamera().setEntity(entity);
+        Minecrft.get().gameRenderer.mainCamera().setEntity(entity);
 
         // Set eye height to final value to skip transition animation
-        Minecrft.get().gameRenderer.getMainCamera().eyeHeight = entity.getEyeHeight();
-        Minecrft.get().gameRenderer.getMainCamera().eyeHeightOld = entity.getEyeHeight();
+        Minecrft.get().gameRenderer.mainCamera().eyeHeight = entity.getEyeHeight();
+        Minecrft.get().gameRenderer.mainCamera().eyeHeightOld = entity.getEyeHeight();
     }
 
     public static void resetCameraEntity() {

@@ -5,7 +5,7 @@
   "minVersion": "0.8",
   "plugin": "io.github.mortuusars.exposure.fabric.ExposureMixinPlugin",
   "client": [
-    "LevelRendererMixin"
+    "LevelExtractorMixin"
   ],
   "mixins": [
     "AlbumItemFabricMixin"

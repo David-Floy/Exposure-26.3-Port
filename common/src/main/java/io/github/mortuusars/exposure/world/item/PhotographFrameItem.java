@@ -31,7 +31,7 @@ public class PhotographFrameItem extends Item {
         Level level = context.getLevel();
         PhotographFrameEntity frameEntity = createEntity(level, resultPos, direction);
 
-        EntityType.createDefaultStackConfig(level, itemInHand, player).accept(frameEntity);
+        EntityType.<PhotographFrameEntity>createDefaultStackConfig(level, itemInHand, player).apply(frameEntity);
 
         for (int i = 2; i >= 0; i--) {
             frameEntity.setSize(i);

@@ -81,7 +81,7 @@ public class FileCaptureTask extends Task<Result<Image>> {
             return Result.error(ERROR_PATH_EMPTY);
         }
 
-        if (!Minecrft.get().isSingleplayer() && Config.Client.FILE_LOADING_ONLY_RELATIVE_TO_EXPOSURES_DIR.get()) {
+        if (!Minecrft.isSingleplayer() && Config.Client.FILE_LOADING_ONLY_RELATIVE_TO_EXPOSURES_DIR.get()) {
             if (file.isAbsolute()) {
                 LOGGER.error("Absolute paths are not supported. Path: {}", filepath);
                 LOGGER.info("Place image into a game directory and use a relative path.");

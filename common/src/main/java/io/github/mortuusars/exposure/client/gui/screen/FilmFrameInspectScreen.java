@@ -25,7 +25,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 import org.jetbrains.annotations.NotNull;
-import org.lwjgl.glfw.GLFW;
+import org.lwjgl.sdl.SDLScancode;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -50,7 +50,7 @@ public class FilmFrameInspectScreen extends Screen {
     protected final KeyBindings keyBindings = KeyBindings.of(
             Key.press(Minecrft.options().keyInventory).executes(this::onClose),
             Key.press(InputConstants.KEY_ADD).or(Key.press(InputConstants.KEY_EQUALS)).executes(zoom::zoomIn),
-            Key.press(GLFW.GLFW_KEY_KP_SUBTRACT).or(Key.press(InputConstants.KEY_MINUS)).executes(zoom::zoomOut),
+            Key.press(SDLScancode.SDL_SCANCODE_KP_MINUS).or(Key.press(InputConstants.KEY_MINUS)).executes(zoom::zoomOut),
             Key.press(InputConstants.KEY_LEFT).or(Key.press(InputConstants.KEY_A)).executes(pager::previousPage),
             Key.press(InputConstants.KEY_RIGHT).or(Key.press(InputConstants.KEY_D)).executes(pager::nextPage),
             Key.release(InputConstants.KEY_LEFT).or(Key.press(InputConstants.KEY_A)).executes(pager::resetCooldown),

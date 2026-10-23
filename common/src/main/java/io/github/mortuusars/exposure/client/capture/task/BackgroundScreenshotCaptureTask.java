@@ -10,6 +10,7 @@ import io.github.mortuusars.exposure.client.util.Minecrft;
 import io.github.mortuusars.exposure.client.image.WrappedNativeImage;
 import io.github.mortuusars.exposure.client.capture.Capture;
 import io.github.mortuusars.exposure.client.image.Image;
+import io.github.mortuusars.exposure.mixin.client.GameRendererMainRenderTargetAccessor;
 import io.github.mortuusars.exposure.util.cycles.task.Result;
 import io.github.mortuusars.exposure.util.cycles.task.Task;
 import net.minecraft.client.Minecraft;
@@ -44,7 +45,38 @@ public class BackgroundScreenshotCaptureTask extends Task<Result<Image>> {
 
     public static boolean isCaptureFrameRendering() {
         BackgroundScreenshotCaptureTask capture = activeCapture;
-        return capture != null && capture.redirecting && capture.captureFrameRendering;
+        return capture != null && capture.redirecting && capture.captureFrameRendering && capture.renderTarget != null;
+    }
+
+    /**
+     * Returns the capture target instead of the real main render target while the capture frame renders.
+     * <p>
+     * The redirect covers only the capture frame itself: from the start of the next normal frame until GUI
+     * submission. A capture is armed in the middle of the previous frame, and 26.3 presents the swapchain from
+     * {@code GameRenderer#mainRenderTarget()}, so redirecting from the moment of arming would present the
+     * still undefined capture target for one frame.
+     */
+    public static RenderTarget redirectMainRenderTarget(RenderTarget target) {
+        if (isCaptureFrameRendering() && target == realMainRenderTarget()) {
+            return Objects.requireNonNull(Objects.requireNonNull(activeCapture).renderTarget);
+        }
+        return target;
+    }
+
+    /**
+     * Maps the capture target back to the real main render target, for objects that keep the main target
+     * beyond the current frame (26.3 {@code SkyRenderer} caches the target it was constructed with).
+     */
+    public static RenderTarget unredirectMainRenderTarget(RenderTarget target) {
+        BackgroundScreenshotCaptureTask capture = activeCapture;
+        if (capture != null && capture.renderTarget != null && target == capture.renderTarget) {
+            return realMainRenderTarget();
+        }
+        return target;
+    }
+
+    private static RenderTarget realMainRenderTarget() {
+        return ((GameRendererMainRenderTargetAccessor) Minecrft.get().gameRenderer).exposure$getMainRenderTarget();
     }
 
     /**
@@ -52,11 +84,11 @@ public class BackgroundScreenshotCaptureTask extends Task<Result<Image>> {
      * rendered frame now has freshly extracted camera, FOV, GUI and level render state, so this
      * normal frame can be rendered into the capture target without consuming render state twice.
      */
-    public static void onRenderFrameStarted(boolean renderLevel) {
+    public static void onRenderFrameStarted(boolean shouldRenderLevel) {
         RenderSystem.assertOnRenderThread();
         BackgroundScreenshotCaptureTask capture = activeCapture;
         if (capture != null && capture.redirecting) {
-            capture.captureFrameRendering = renderLevel && Minecrft.get().level != null;
+            capture.captureFrameRendering = shouldRenderLevel && Minecrft.get().level != null;
         }
     }
 
@@ -96,9 +128,12 @@ public class BackgroundScreenshotCaptureTask extends Task<Result<Image>> {
         }
 
         Minecraft minecraft = Minecrft.get();
-        RenderTarget mainRenderTarget = minecraft.getMainRenderTarget();
+        RenderTarget mainRenderTarget = minecraft.gameRenderer.mainRenderTarget();
+        // 26.3 targets declare their attachment formats; mirror the main target's color and depth formats.
         renderTarget = new TextureTarget("Exposure background screenshot",
-                mainRenderTarget.width, mainRenderTarget.height, true);
+                mainRenderTarget.width, mainRenderTarget.height,
+                Objects.requireNonNull(mainRenderTarget.getColorTexture()).getFormat(),
+                Objects.requireNonNull(mainRenderTarget.getDepthTexture()).getFormat());
 
         redirecting = true;
         activeCapture = this;

@@ -21,8 +21,10 @@ import net.fabricmc.fabric.api.event.registry.DynamicRegistries;
 import net.fabricmc.fabric.api.creativetab.v1.CreativeModeTabEvents;
 import net.fabricmc.fabric.api.loot.v3.LootTableEvents;
 import net.fabricmc.fabric.api.loot.v3.LootTableSource;
+import net.minecraft.core.HolderGetter;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.item.CreativeModeTabs;
@@ -101,29 +103,32 @@ public class ExposureFabric implements ModInitializer {
         if (!Config.Common.GENERATE_LOOT.get() || !source.isBuiltin())
             return;
 
+        // 26.3 loot tables are a reloadable registry: nested table entries take a holder instead of a key.
+        HolderGetter<LootTable> lootTables = provider.lookupOrThrow(Registries.LOOT_TABLE);
+
         if (BuiltInLootTables.SIMPLE_DUNGEON.equals(tableKey)) {
             builder.pool(LootPool.lootPool()
-                    .add(NestedLootTable.lootTableReference(Exposure.LootTables.SIMPLE_DUNGEON_INJECT))
+                    .add(NestedLootTable.lootTableReference(lootTables.getOrThrow(Exposure.LootTables.SIMPLE_DUNGEON_INJECT)))
                     .build());
         }
         if (BuiltInLootTables.ABANDONED_MINESHAFT.equals(tableKey)) {
             builder.pool(LootPool.lootPool()
-                    .add(NestedLootTable.lootTableReference(Exposure.LootTables.ABANDONED_MINESHAFT_INJECT))
+                    .add(NestedLootTable.lootTableReference(lootTables.getOrThrow(Exposure.LootTables.ABANDONED_MINESHAFT_INJECT)))
                     .build());
         }
         if (BuiltInLootTables.STRONGHOLD_CROSSING.equals(tableKey)) {
             builder.pool(LootPool.lootPool()
-                    .add(NestedLootTable.lootTableReference(Exposure.LootTables.STRONGHOLD_CROSSING_INJECT))
+                    .add(NestedLootTable.lootTableReference(lootTables.getOrThrow(Exposure.LootTables.STRONGHOLD_CROSSING_INJECT)))
                     .build());
         }
         if (BuiltInLootTables.VILLAGE_PLAINS_HOUSE.equals(tableKey)) {
             builder.pool(LootPool.lootPool()
-                    .add(NestedLootTable.lootTableReference(Exposure.LootTables.VILLAGE_PLAINS_HOUSE_INJECT))
+                    .add(NestedLootTable.lootTableReference(lootTables.getOrThrow(Exposure.LootTables.VILLAGE_PLAINS_HOUSE_INJECT)))
                     .build());
         }
         if (BuiltInLootTables.SHIPWRECK_MAP.equals(tableKey)) {
             builder.pool(LootPool.lootPool()
-                    .add(NestedLootTable.lootTableReference(Exposure.LootTables.SHIPWRECK_MAP_INJECT))
+                    .add(NestedLootTable.lootTableReference(lootTables.getOrThrow(Exposure.LootTables.SHIPWRECK_MAP_INJECT)))
                     .build());
         }
     }

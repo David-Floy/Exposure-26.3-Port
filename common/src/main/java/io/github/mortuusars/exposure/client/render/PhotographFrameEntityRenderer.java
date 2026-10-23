@@ -106,8 +106,8 @@ public class PhotographFrameEntityRenderer<T extends PhotographFrameEntity> exte
         poseStack.pushPose();
         double hangOffset = 0.46875;
         poseStack.translate(state.direction.getStepX() * hangOffset, state.direction.getStepY() * hangOffset, state.direction.getStepZ() * hangOffset);
-        poseStack.mulPose(Axis.XP.rotationDegrees(state.xRot));
-        poseStack.mulPose(Axis.YP.rotationDegrees(180.0F - state.yRot));
+        poseStack.rotate(Axis.XP.rotationDegrees(state.xRot));
+        poseStack.rotate(Axis.YP.rotationDegrees(180.0F - state.yRot));
 
         if (state.image != null) submitPhotograph(state, poseStack, collector);
         else if (!state.fallbackItem.isEmpty()) submitFallbackItem(state, poseStack, collector);
@@ -128,8 +128,8 @@ public class PhotographFrameEntityRenderer<T extends PhotographFrameEntity> exte
         float border = state.frameInvisible ? 0f : 0.125f;
         float center = (float) ((state.frameInvisible ? 0.497f : 0.48f) - Config.Client.PHOTOGRAPH_FRAME_IMAGE_OFFSET.get());
         float size = state.size + 1 - border * 2;
-        poseStack.mulPose(Axis.ZP.rotationDegrees(state.itemRotation * 90.0F));
-        poseStack.mulPose(Axis.ZP.rotationDegrees(180.0F));
+        poseStack.rotate(Axis.ZP.rotationDegrees(state.itemRotation * 90.0F));
+        poseStack.rotate(Axis.ZP.rotationDegrees(180.0F));
         poseStack.translate(-0.5 * (state.size + 1) + border, -0.5 * (state.size + 1) + border, center);
         poseStack.scale(size, size, 1);
         ExposureClient.imageRenderer().submit(state.image, poseStack, collector);
@@ -141,7 +141,7 @@ public class PhotographFrameEntityRenderer<T extends PhotographFrameEntity> exte
         float scale = 0.65f + state.size * 0.5f;
         poseStack.translate(0, 0, 0.46875);
         poseStack.scale(scale, scale, scale * 0.75f);
-        poseStack.mulPose(Axis.ZP.rotationDegrees(state.itemRotation * 90.0F));
+        poseStack.rotate(Axis.ZP.rotationDegrees(state.itemRotation * 90.0F));
         state.fallbackItem.submit(poseStack, collector, state.lightCoords, OverlayTexture.NO_OVERLAY, state.outlineColor);
         poseStack.popPose();
     }
@@ -161,7 +161,7 @@ public class PhotographFrameEntityRenderer<T extends PhotographFrameEntity> exte
 
     @Override
     protected boolean shouldShowName(T entity, double distanceToCameraSq) {
-        return Minecraft.renderNames() && !entity.getItem().isEmpty() && entity.getItem().has(DataComponents.CUSTOM_NAME)
+        return !Minecraft.getInstance().gui.hud.isHidden() && !entity.getItem().isEmpty() && entity.getItem().has(DataComponents.CUSTOM_NAME)
                 && Minecraft.getInstance().crosshairPickEntity == entity
                 && distanceToCameraSq < (entity.isDiscrete() ? 1024.0 : 4096.0);
     }

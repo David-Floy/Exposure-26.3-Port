@@ -1,6 +1,6 @@
 # Migration history
 
-The files in `history/` are immutable stage reports copied from the local Minecraft 26.1.2 Fabric migration. They record the evidence, decisions, failures, and conclusions that were available at each stage.
+The files in `history/` are immutable stage reports. The `26.1.2` reports (written in Chinese) were copied from the local Minecraft 26.1.2 Fabric migration; the `26.3` reports (English) document the port from 26.1.2 to 26.3. They record the evidence, decisions, failures, and conclusions that were available at each stage.
 
 Some intermediate conclusions were superseded by later runtime evidence or fixes. Do not treat an earlier phase report as authority for reverting a later correction.
 

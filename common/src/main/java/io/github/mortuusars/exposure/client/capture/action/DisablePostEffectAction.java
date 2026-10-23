@@ -7,12 +7,12 @@ public class DisablePostEffectAction implements CaptureAction {
 
     @Override
     public void beforeCapture() {
-        effectActive = Minecraft.getInstance().gameRenderer.effectActive;
-        Minecraft.getInstance().gameRenderer.effectActive = false;
+        effectActive = Minecraft.getInstance().gameRenderer.spectatedEntityEffectActive;
+        Minecraft.getInstance().gameRenderer.spectatedEntityEffectActive = false;
     }
 
     @Override
     public void afterCapture() {
-        Minecraft.getInstance().gameRenderer.effectActive = effectActive;
+        Minecraft.getInstance().gameRenderer.spectatedEntityEffectActive = effectActive;
     }
 }

@@ -20,11 +20,14 @@ public class MouseHandlerMixin {
         }
     }
 
-    @Inject(method = "onButton", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/Minecraft;getOverlay()Lnet/minecraft/client/gui/screens/Overlay;",
+    /**
+     * 26.2 moved the overlay to {@code Gui#overlay}. 26.3 also dropped the {@code buttonInfo} local: SDL already
+     * delivers the effective button, so {@code rawButtonInfo} is the value vanilla uses from here on.
+     */
+    @Inject(method = "onButton", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/Gui;overlay()Lnet/minecraft/client/gui/screens/Overlay;",
             ordinal = 0), cancellable = true)
-    private void onButton(long windowPointer, MouseButtonInfo rawButtonInfo, int action, CallbackInfo ci,
-                          @Local(name = "buttonInfo") MouseButtonInfo buttonInfo) {
-        if (MouseHandler.buttonPressed(buttonInfo, action))
+    private void onButton(long windowPointer, MouseButtonInfo rawButtonInfo, int action, CallbackInfo ci) {
+        if (MouseHandler.buttonPressed(rawButtonInfo, action))
             ci.cancel();
     }
 

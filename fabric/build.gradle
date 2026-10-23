@@ -9,6 +9,14 @@ loom {
             sourceSet sourceSets.main
         }
     }
+
+    // Loom generates IntelliJ run configurations only for the root project by default.
+    // This adds "Minecraft Client (:fabric)" and "Minecraft Server (:fabric)" for this module.
+    runs {
+        configureEach {
+            ideConfigGenerated(true)
+        }
+    }
 }
 
 sourceSets {

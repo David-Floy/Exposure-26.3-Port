@@ -12,8 +12,14 @@ accessible field net/minecraft/client/renderer/texture/TextureManager byPath Lja
 accessible field net/minecraft/client/renderer/item/properties/conditional/ConditionalItemModelProperties ID_MAPPER Lnet/minecraft/util/ExtraCodecs$LateBoundIdMapper;
 accessible field net/minecraft/client/renderer/item/properties/numeric/RangeSelectItemModelProperties ID_MAPPER Lnet/minecraft/util/ExtraCodecs$LateBoundIdMapper;
 
-accessible method net/minecraft/client/renderer/GameRenderer setPostEffect (Lnet/minecraft/resources/Identifier;)V
-accessible field net/minecraft/client/renderer/GameRenderer effectActive Z
+# SharedTransformCompositeModel gives camera attachment layers the camera body's display transform.
+accessible field net/minecraft/client/renderer/item/ItemStackRenderState activeLayerCount I
+accessible field net/minecraft/client/renderer/item/ItemStackRenderState layers [Lnet/minecraft/client/renderer/item/ItemStackRenderState$LayerRenderState;
+accessible field net/minecraft/client/renderer/item/ItemStackRenderState$LayerRenderState itemTransform Lnet/minecraft/client/resources/model/cuboid/ItemTransform;
+
+# 26.3 renamed the single vanilla spectator post-effect slot (postEffectId/effectActive).
+accessible method net/minecraft/client/renderer/GameRenderer setSpectatedEntityPostEffect (Lnet/minecraft/resources/Identifier;)V
+accessible field net/minecraft/client/renderer/GameRenderer spectatedEntityEffectActive Z
 accessible field net/minecraft/client/Camera eyeHeight F
 accessible field net/minecraft/client/Camera eyeHeightOld F
 
@@ -27,6 +33,6 @@ accessible method net/minecraft/client/Minecraft handleKeybinds ()V
 accessible field net/minecraft/client/gui/screens/Screen renderables Ljava/util/List;
 accessible method net/minecraft/client/gui/screens/inventory/AbstractContainerScreen getTooltipFromContainerItem (Lnet/minecraft/world/item/ItemStack;)Ljava/util/List;
 
-accessible method net/minecraft/world/entity/monster/EnderMan isBeingStaredBy (Lnet/minecraft/world/entity/player/Player;)Z
+accessible method net/minecraft/world/entity/monster/Enderman isBeingStaredBy (Lnet/minecraft/world/entity/player/Player;)Z
 
 accessible field net/minecraft/client/gui/screens/inventory/AnvilScreen name Lnet/minecraft/client/gui/components/EditBox;

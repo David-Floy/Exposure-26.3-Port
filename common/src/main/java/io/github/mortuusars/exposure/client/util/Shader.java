@@ -78,17 +78,17 @@ public final class Shader {
         if (minecraft.getShaderManager().getPostChain(postEffectId, LevelTargetBundle.MAIN_TARGETS) == null) {
             Exposure.LOGGER.warn("Cannot apply unavailable post effect '{}' (resolved as '{}').",
                     shaderLocation, postEffectId);
-            minecraft.gameRenderer.clearPostEffect();
+            minecraft.gameRenderer.clearSpectatedEntityPostEffect();
             return false;
         }
 
-        minecraft.gameRenderer.setPostEffect(postEffectId);
+        minecraft.gameRenderer.setSpectatedEntityPostEffect(postEffectId);
         return true;
     }
 
     public static void clearGameRendererEffect() {
         RenderSystem.assertOnRenderThread();
-        Minecrft.get().gameRenderer.clearPostEffect();
+        Minecrft.get().gameRenderer.clearSpectatedEntityPostEffect();
     }
 
     private static @Nullable PostChain getPostChain(Identifier shaderLocation) {

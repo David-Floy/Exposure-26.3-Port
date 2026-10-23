@@ -6,7 +6,7 @@ sourceSets {
     main {
         java {
             // Optional integrations are preserved in the repository but are not part of
-            // the first Fabric 26.1.2 compilation pass.
+            // the Fabric build (excluded since the 26.1.2 port).
             exclude 'io/github/mortuusars/exposure/integration/jei/**'
             exclude 'io/github/mortuusars/exposure/integration/jade/**'
             exclude 'io/github/mortuusars/exposure/integration/ModCompatibilityClient.java'

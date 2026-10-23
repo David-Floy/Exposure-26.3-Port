@@ -34,6 +34,15 @@ public class Bugger {
     private static int zoom;
     private static int scroll;
 
+    /**
+     * Upstream showed the Bugger only while the F3 debug screen was open. In 26.3 {@code showDebugScreen()} is also
+     * true while a debug entry is set to "always on", so the open F3 overlay is required explicitly.
+     */
+    public static boolean isDebugScreenOpen() {
+        Minecraft minecraft = Minecraft.getInstance();
+        return minecraft.debugEntries.isOverlayVisible() && minecraft.gui.hud.getDebugOverlay().showDebugScreen();
+    }
+
     public static boolean onKeyPress(int key, int scanCode, int modifiers) {
         if (key == InputConstants.KEY_UP) up();
         if (key == InputConstants.KEY_DOWN) down();
@@ -59,7 +68,7 @@ public class Bugger {
     }
 
     private static void test() {
-        Minecrft.get().setScreen(new TestImageScreen());
+        Minecrft.get().gui.setScreen(new TestImageScreen());
     }
 
     // --
@@ -90,9 +99,9 @@ public class Bugger {
         guiGraphics.pose().pushMatrix();
         guiGraphics.pose().scale(scale, scale);
         List<String> leftLines = collectLeftLines().stream().skip(scroll).toList();
-        ((BuggerScreenRenderLinesInvoker) Minecraft.getInstance().getDebugOverlay()).drawLines(guiGraphics, leftLines, true);
+        ((BuggerScreenRenderLinesInvoker) Minecraft.getInstance().gui.hud.getDebugOverlay()).drawLines(guiGraphics, leftLines, true, guiGraphics.guiWidth());
         List<String> rightLines = collectRightLines().stream().skip(scroll).toList();
-        ((BuggerScreenRenderLinesInvoker) Minecraft.getInstance().getDebugOverlay()).drawLines(guiGraphics, rightLines, false);
+        ((BuggerScreenRenderLinesInvoker) Minecraft.getInstance().gui.hud.getDebugOverlay()).drawLines(guiGraphics, rightLines, false, guiGraphics.guiWidth());
         guiGraphics.pose().popMatrix();
     }
 
@@ -137,7 +146,7 @@ public class Bugger {
 
         guiGraphics.pose().pushMatrix();
         guiGraphics.pose().scale(scale, scale);
-        ((BuggerScreenRenderLinesInvoker) Minecrft.get().getDebugOverlay()).drawLines(guiGraphics, lines, true);
+        ((BuggerScreenRenderLinesInvoker) Minecrft.get().gui.hud.getDebugOverlay()).drawLines(guiGraphics, lines, true, guiGraphics.guiWidth());
         guiGraphics.pose().popMatrix();
     }
 

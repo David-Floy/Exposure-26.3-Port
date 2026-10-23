@@ -72,8 +72,8 @@ public class ViewfinderOverlay {
         this.initialScale = 0.5f;
         this.scale = 0.5f; // Start small to animate expanding
 
-        this.xRot = Minecrft.get().gameRenderer.getMainCamera().xRot();
-        this.yRot = Minecrft.get().gameRenderer.getMainCamera().yRot();
+        this.xRot = Minecrft.get().gameRenderer.mainCamera().xRot();
+        this.yRot = Minecrft.get().gameRenderer.mainCamera().yRot();
         this.xRot0 = xRot;
         this.yRot0 = yRot;
     }
@@ -92,7 +92,7 @@ public class ViewfinderOverlay {
 
         // opening and scale is updated even if overlay is not rendered - other classes may depend on them.
 
-        if (!viewfinder.isLookingThrough() || Minecrft.options().hideGui || camera.isEmpty()) return;
+        if (!viewfinder.isLookingThrough() || Minecrft.get().gui.hud.isHidden() || camera.isEmpty()) return;
 
         final int width = Minecrft.get().getWindow().getGuiScaledWidth();
         final int height = Minecrft.get().getWindow().getGuiScaledHeight();
@@ -141,7 +141,7 @@ public class ViewfinderOverlay {
             blitOpening(guiGraphics, guideTexture);
         }
 
-        if (!(Minecrft.get().screen instanceof ViewfinderCameraControlsScreen)) {
+        if (!(Minecrft.get().gui.screen() instanceof ViewfinderCameraControlsScreen)) {
             guiGraphics.nextStratum();
             renderStatusIcons(guiGraphics, camera.getItemStack());
         }
@@ -231,7 +231,9 @@ public class ViewfinderOverlay {
 
     public void applyAttackAnimation(Matrix3x2fStack poseStack, DeltaTracker deltaTracker) {
         LocalPlayer player = Minecrft.player();
-        float attack = player.attackAnim;
+        // 26.3 replaced LivingEntity#attackAnim with a swing state. At partial tick 1 this is the current tick's
+        // swing progress; the modulo drops the +1 that the interpolation adds on the tick a swing restarts.
+        float attack = player.getSwingAnimation(1.0F) % 1.0F;
         if (attack > 0.1f)
             attack = 1f - attack;
 
@@ -248,8 +250,8 @@ public class ViewfinderOverlay {
         float delta = Math.min(deltaTracker.getGameTimeDeltaTicks() * 0.6f, 1.0f);
         xRot0 = Mth.lerp(delta, xRot0, xRot);
         yRot0 = Mth.lerp(delta, yRot0, yRot);
-        xRot = Minecrft.get().gameRenderer.getMainCamera().xRot();
-        yRot = Minecrft.get().gameRenderer.getMainCamera().yRot();
+        xRot = Minecrft.get().gameRenderer.mainCamera().xRot();
+        yRot = Minecrft.get().gameRenderer.mainCamera().yRot();
         double guiScale = Minecrft.get().getWindow().getGuiScale();
         double horizontalDelay = (yRot - yRot0) / guiScale * 3;
         double verticalDelay = (xRot - xRot0) / guiScale * 3;

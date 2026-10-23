@@ -1,6 +1,7 @@
 package io.github.mortuusars.exposure.client.gui.screen;
 
 import com.google.common.base.Preconditions;
+import com.mojang.blaze3d.Blaze3D;
 import com.mojang.blaze3d.platform.InputConstants;
 import io.github.mortuusars.exposure.Config;
 import io.github.mortuusars.exposure.Exposure;
@@ -23,7 +24,6 @@ import io.github.mortuusars.exposure.world.item.PhotographItem;
 import io.github.mortuusars.exposure.world.item.util.ItemAndStack;
 import io.github.mortuusars.exposure.util.PagingDirection;
 import io.github.mortuusars.exposure.world.sound.SoundEffect;
-import net.minecraft.util.Util;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.ImageButton;
 import net.minecraft.client.gui.screens.Screen;
@@ -35,7 +35,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.util.StringUtil;
 import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.NotNull;
-import org.lwjgl.glfw.GLFW;
+import org.lwjgl.sdl.SDLScancode;
 
 import java.io.File;
 import java.util.*;
@@ -57,7 +57,7 @@ public class PhotographScreen extends Screen {
     protected final KeyBindings keyBindings = KeyBindings.of(
             Key.press(Minecrft.options().keyInventory).executes(this::onClose),
             Key.press(InputConstants.KEY_ADD).or(Key.press(InputConstants.KEY_EQUALS)).executes(zoom::zoomIn),
-            Key.press(GLFW.GLFW_KEY_KP_SUBTRACT).or(Key.press(InputConstants.KEY_MINUS)).executes(zoom::zoomOut),
+            Key.press(SDLScancode.SDL_SCANCODE_KP_MINUS).or(Key.press(InputConstants.KEY_MINUS)).executes(zoom::zoomOut),
             Key.press(Modifier.CONTROL, InputConstants.KEY_I).executes(this::dropAsItem),
             Key.press(Modifier.CONTROL, InputConstants.KEY_C).executes(this::copyIdentifierToClipboard),
             Key.press(Modifier.CONTROL | Modifier.SHIFT, InputConstants.KEY_C).executes(this::copySavedFilePathToClipboard),
@@ -306,7 +306,7 @@ public class PhotographScreen extends Screen {
                 .identifier()
                 .mapId(id -> {
                     if (savedExposureFiles.get(id) instanceof File file) {
-                        Util.getPlatform().openFile(file);
+                        Blaze3D.openPath(file.toPath());
                         return true;
                     }
                     return false;

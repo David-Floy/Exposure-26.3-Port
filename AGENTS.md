@@ -1,6 +1,6 @@
 # Repository instructions
 
-This branch is the maintained, unofficial Minecraft 26.1.2 Fabric port of Exposure. These rules apply to human contributors, Codex, and other automation working in this repository.
+This branch is the maintained, unofficial Minecraft 26.3 Fabric port of Exposure. These rules apply to human contributors, Codex, and other automation working in this repository.
 
 ## Start here
 
@@ -8,7 +8,7 @@ Before changing code:
 
 1. Read this file, `PORTING.md`, and the newest report in `docs/migration/history`.
 2. Read older migration reports only when a named subsystem or regression requires that history. Intermediate conclusions may have been superseded.
-3. Confirm the task is within the Fabric 26.1.2 support boundary. Do not expand scope without evidence.
+3. Confirm the task is within the Fabric 26.3 support boundary. Do not expand scope without evidence.
 
 ## Non-negotiable compatibility boundaries
 

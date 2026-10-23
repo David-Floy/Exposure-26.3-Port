@@ -22,15 +22,15 @@ import java.util.function.Predicate;
 
 public class ClientGUI {
     public static void openPhotographScreen(List<ItemAndStack<PhotographItem>> photographs) {
-        Minecrft.get().setScreen(new PhotographScreen(photographs));
+        Minecrft.get().gui.setScreen(new PhotographScreen(photographs));
     }
 
     public static void openPhotographsScreenFromItem(int item) {
-        Minecrft.get().setScreen(new PhotographScreen(PhotographScreen.PhotographProvider.fromPhotographItem(item)));
+        Minecrft.get().gui.setScreen(new PhotographScreen(PhotographScreen.PhotographProvider.fromPhotographItem(item)));
     }
 
     public static void openAlbumViewScreen(ItemStack albumStack) {
-        Minecrft.get().setScreen(new AlbumViewScreen(AlbumViewScreen.AlbumAccess.fromItem(albumStack)));
+        Minecrft.get().gui.setScreen(new AlbumViewScreen(AlbumViewScreen.AlbumAccess.fromItem(albumStack)));
     }
 
     public static void addFilmRollDevelopingTooltip(ItemStack filmStack, Item.TooltipContext tooltipContext,

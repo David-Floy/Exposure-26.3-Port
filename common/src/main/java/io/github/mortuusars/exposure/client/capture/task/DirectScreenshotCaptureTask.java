@@ -38,7 +38,7 @@ public class DirectScreenshotCaptureTask extends Task<Result<Image>> {
 
         if (delay <= 0 && !readbackStarted) {
             readbackStarted = true;
-            ScreenshotReadback.capture(Minecraft.getInstance().getMainRenderTarget())
+            ScreenshotReadback.capture(Minecraft.getInstance().gameRenderer.mainRenderTarget())
                     .whenComplete((nativeImage, throwable) -> {
                         if (throwable != null) {
                             future.completeExceptionally(throwable);

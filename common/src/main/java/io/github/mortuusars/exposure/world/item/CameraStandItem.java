@@ -14,6 +14,7 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.EntitySpawnReason;
+import net.minecraft.world.entity.PostSpawnProcessor;
 import net.minecraft.world.entity.decoration.ArmorStand;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.vehicle.boat.Boat;
@@ -26,8 +27,6 @@ import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
-
-import java.util.function.Consumer;
 
 public class CameraStandItem extends Item {
     public CameraStandItem(Properties properties) {
@@ -48,7 +47,7 @@ public class CameraStandItem extends Item {
         if (!level.noCollision(null, aabb) || !level.getEntities(null, aabb).isEmpty()) return InteractionResult.FAIL;
 
         if (level instanceof ServerLevel serverLevel) {
-            Consumer<CameraStandEntity> consumer = EntityType.createDefaultStackConfig(serverLevel, itemStack, context.getPlayer());
+            PostSpawnProcessor<CameraStandEntity> consumer = EntityType.createDefaultStackConfig(serverLevel, itemStack, context.getPlayer());
             CameraStandEntity cameraStand = Exposure.EntityTypes.CAMERA_STAND.get()
                     .create(serverLevel, consumer, blockPos, EntitySpawnReason.SPAWN_ITEM_USE, true, true);
             if (cameraStand == null) {
@@ -75,7 +74,7 @@ public class CameraStandItem extends Item {
         if (boat.getPassengers().size() >= 2) return InteractionResult.PASS;
 
         if (player.level() instanceof ServerLevel serverLevel) {
-            Consumer<CameraStandEntity> consumer = EntityType.createDefaultStackConfig(serverLevel, itemStack, player);
+            PostSpawnProcessor<CameraStandEntity> consumer = EntityType.createDefaultStackConfig(serverLevel, itemStack, player);
             CameraStandEntity cameraStand = Exposure.EntityTypes.CAMERA_STAND.get()
                     .create(serverLevel, consumer, boat.blockPosition(), EntitySpawnReason.SPAWN_ITEM_USE, true, true);
             if (cameraStand == null) {

@@ -1,34 +1,33 @@
-# Exposure 1.9.18 for Minecraft 26.1.2
+# Exposure 1.9.18 for Minecraft 26.3
 
-> **Unofficial Fabric Port — Patch 2**
+> **Unofficial Fabric Port — development build**
 
-This repository contains an unofficial Minecraft 26.1.2 Fabric port of [Exposure](https://github.com/mortuusars/Exposure), the camera mod created by [Mortuusars](https://github.com/mortuusars). It is based on Exposure 1.9.18 at fixed upstream commit [`9383e0c9237099947a1e6399fcace5772f496c7d`](https://github.com/mortuusars/Exposure/commit/9383e0c9237099947a1e6399fcace5772f496c7d).
+This repository contains an unofficial Minecraft 26.3 Fabric port of [Exposure](https://github.com/mortuusars/Exposure), the camera mod created by [Mortuusars](https://github.com/mortuusars). It is based on Exposure 1.9.18 at fixed upstream commit [`9383e0c9237099947a1e6399fcace5772f496c7d`](https://github.com/mortuusars/Exposure/commit/9383e0c9237099947a1e6399fcace5772f496c7d) and continues the unofficial [Minecraft 26.1.2 Fabric port by Filmorae](https://github.com/Filmorae/Exposure-26.1.2-Port).
 
-Filmorae maintains this port but is not the original author. Problems specific to this repository must **not** be reported to the official Exposure issue tracker; use this fork's [issue tracker](https://github.com/Filmorae/Exposure-26.1.2-Port/issues).
+David-Floy maintains this 26.3 port; neither David-Floy nor Filmorae is the original author. Problems specific to this repository must **not** be reported to the official Exposure issue tracker; use this fork's [issue tracker](https://github.com/David-Floy/Exposure-26.3-Port/issues).
 
 ## Status
 
 - Fabric only.
-- Port version: `1.9.18-port.2+mc26.1.2`.
-- Fixed the third-person grey duplicate photograph caused by the held photograph backside transform.
+- Port version: `1.9.18-port.1+mc26.3` (not released yet).
 - The mod id remains `exposure` for dependent-mod recognition.
 - Compatibility with old Exposure worlds, albums, photographs, and repository data is not guaranteed. Back up a world before testing.
 
-The controlled migration verified the core camera and viewfinder, hand-held and Camera Stand Capture, direct and background Capture, photograph storage/rendering/export, film development and printing, Album/Signed Album/Lectern flows, photograph frames, recipes, commands, integrated-server behavior, and dedicated-server startup/shutdown. See [COMPATIBILITY.md](COMPATIBILITY.md) for the exact matrix and [KNOWN_ISSUES.md](KNOWN_ISSUES.md) for support limits.
+The 26.3 build passes the automated gates (compilation, 70 migration tests, both Access Widener validations, full build). At runtime it has so far been verified with a development client on OpenGL (startup, new world, background Capture with an exported photograph, clean exit), in the maintainer's in-game test on Vulkan, and with a dedicated server (startup to `Done`, datapack loading, normal stop). Improved Transparency and Shader Packs are not verified yet. See [COMPATIBILITY.md](COMPATIBILITY.md) for the exact matrix and [KNOWN_ISSUES.md](KNOWN_ISSUES.md) for support limits.
 
 ## Requirements
 
-- Minecraft 26.1.2
+- Minecraft 26.3
 - Java 25
-- Fabric Loader 0.19.3 or compatible newer 0.19.x version
-- [Fabric API](https://modrinth.com/mod/fabric-api) 0.150.0+26.1.2 or newer compatible 26.1.2 build
-- [Forge Config API Port](https://modrinth.com/mod/forge-config-api-port) 26.1.4
+- Fabric Loader 0.19.5 or compatible newer version
+- [Fabric API](https://modrinth.com/mod/fabric-api) 0.164.0+26.3 or newer compatible 26.3 build
+- [Forge Config API Port](https://modrinth.com/mod/forge-config-api-port) 26.3.1
 
-Optional integrations in the source tree are not required runtime dependencies and are not all enabled or verified for this prerelease.
+Optional integrations in the source tree are not required runtime dependencies and are not enabled in this build.
 
 ## Installation
 
-1. Install Minecraft 26.1.2 with Fabric Loader and Java 25.
+1. Install Minecraft 26.3 with Fabric Loader and Java 25.
 2. Install the required Fabric API and Forge Config API Port versions above.
 3. Place the port JAR in the instance's `mods` directory.
 4. Start with a backed-up test world and confirm the loaded version identifies this unofficial port.
@@ -37,11 +36,11 @@ Do not download this port from the official Exposure CurseForge or Modrinth proj
 
 ## Shader and rendering boundary
 
-Capture was controlled-tested without shaders and with Iris 1.11.2, Sodium 0.9.1, and BSL 8.4.01.2. That exact result does not establish compatibility with every Shader Pack, GPU, player-model layer, or skin-layer mod. The port uses Minecraft's normal frame lifecycle and does not hard-code an Iris or Shader-Pack-private framebuffer.
+The port uses Minecraft's normal frame lifecycle and does not hard-code an Iris or Shader-Pack-private framebuffer. Capture has been verified without shaders on OpenGL and Vulkan; results with Improved Transparency, Iris/Sodium, other GPUs, player-model layers, or skin-layer mods are not established yet.
 
 ## Reporting a bug
 
-Use the repository bug template and include the Minecraft/port versions, Fabric Loader/API versions, complete mod list, Shader/Iris/Sodium versions, exact reproduction steps, `latest.log`, `debug.log`, any crash report, and a screenshot or exported photograph. State whether the problem reproduces in a minimal environment.
+Use the repository bug template and include the Minecraft/port versions, Fabric Loader/API versions, graphics API (OpenGL or Vulkan), complete mod list, Shader/Iris/Sodium versions, exact reproduction steps, `latest.log`, `debug.log`, any crash report, and a screenshot or exported photograph. State whether the problem reproduces in a minimal environment.
 
 ## Building
 
@@ -58,4 +57,4 @@ Read [AGENTS.md](AGENTS.md), [PORTING.md](PORTING.md), and [CONTRIBUTING.md](CON
 
 ## License and attribution
 
-Exposure is licensed under the [MIT License](LICENSE.md). Copyright and credit remain with Mortuusars and the upstream contributors. This repository preserves the original license and identifies Filmorae only as the maintainer of the unofficial port.
+Exposure is licensed under the [MIT License](LICENSE.md). Copyright and credit remain with Mortuusars and the upstream contributors. This repository preserves the original license; Filmorae is credited as the maintainer of the 26.1.2 port and David-Floy as the maintainer of the 26.3 port, not as original authors.

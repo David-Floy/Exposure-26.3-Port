@@ -1,5 +1,5 @@
 name: Bug report
-description: Report a reproducible problem in the unofficial Minecraft 26.1.2 Fabric port.
+description: Report a reproducible problem in the unofficial Minecraft 26.3 Fabric port.
 title: "[Bug]: "
 labels:
   - bug
@@ -13,7 +13,7 @@ body:
     id: minecraft
     attributes:
       label: Minecraft version
-      placeholder: 26.1.2
+      placeholder: 26.3
     validations:
       required: true
 
@@ -21,7 +21,7 @@ body:
     id: port
     attributes:
       label: Exposure port version
-      placeholder: 1.9.18-port.1+mc26.1.2
+      placeholder: 1.9.18-port.1+mc26.3
     validations:
       required: true
 
@@ -29,7 +29,7 @@ body:
     id: fabric
     attributes:
       label: Fabric Loader and Fabric API
-      placeholder: Fabric Loader 0.19.3; Fabric API 0.150.0+26.1.2
+      placeholder: Fabric Loader 0.19.5; Fabric API 0.164.0+26.3
     validations:
       required: true
 
