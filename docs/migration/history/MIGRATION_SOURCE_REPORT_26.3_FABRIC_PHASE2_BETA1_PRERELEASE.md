@@ -15,7 +15,7 @@ The 26.3 port at `21e67d79` was prepared as the Beta 1 prerelease `1.9.18-port.1
 | `RELEASE_CHECKLIST.md` item | Status |
 |---|---|
 | Identity and metadata | Done: name, version, beta description, fork URLs, no CurseForge/Modrinth publishing, attribution and MIT license |
-| Automated gates | Done: compilation, 70 tests (23 suites, 0 failures, 0 errors, 0 skipped), both Access Widener validations, complete `--rerun-tasks build`. The release commit is built again from a fresh clone before tagging; `26.3-Fabric` is only set when that build reproduces the checksum below |
+| Automated gates | Done: compilation, 70 tests (23 suites, 0 failures, 0 errors, 0 skipped), both Access Widener validations, complete `--rerun-tasks build`. The release commit is built again from a fresh clone with LF line endings before tagging; `26.3-Fabric` is only set when that build reproduces the checksum below |
 | Client smoke test | Development client on OpenGL and Vulkan (Phase 1 runtime evidence) |
 | Dedicated server | Development server to `Done` and normal stop (Phase 1) |
 | Formal test instance | Done: maintainer test of the release JAR with the required dependency versions (mod list, new world, capture, development and printing, Album notes and signing including text input, frames, export, save/reload, clean exit); also with Iris 1.11.7+26.3-fabric, Sodium mc26.3-0.9.2-fabric, and Lithium mc26.3-0.26.2-fabric, no problems found (Shader Pack and graphics API not recorded) |
@@ -24,7 +24,11 @@ The 26.3 port at `21e67d79` was prepared as the Beta 1 prerelease `1.9.18-port.1
 
 ## Artifact
 
-`fabric/build/libs/exposure-fabric-26.3-1.9.18-port.1+mc26.3.jar`, 2,047,559 bytes, 2026-10-24 12:31:18 +02:00, SHA-256 `c4bd72d8e746b17ea6787293bf1a0fcd5af2c87eb3c493d2a577fa810bc264f9`. The JAR uses fixed entry timestamps and contains no documentation besides the license, so a fresh-clone build of the release commit must reproduce this checksum.
+`exposure-fabric-26.3-1.9.18-port.1+mc26.3.jar` from a fresh clone of the release commit with LF line endings (`core.autocrlf=false`, the content the repository stores and CI checks out): 2,046,776 bytes, 2026-10-24 12:45:38 +02:00, SHA-256 `bff1732d6c4caa730084aaac0a3829a14a34f5f3100a2147352881c2d516d147`. The JAR uses fixed entry timestamps and contains no documentation besides the license, so documentation commits do not change it.
+
+Line endings are the only source of checksum differences. A fresh Windows clone with `core.autocrlf=true` checks text files out as CRLF and produced SHA-256 `20056557c8df905c1b4cfa043efd90137b16653ee89a34f372db53a36e4b654e`; the local working tree, with CRLF originals and LF edits, produced `c4bd72d8e746b17ea6787293bf1a0fcd5af2c87eb3c493d2a577fa810bc264f9`, the checksum first recorded in the release commit. All 211 differing entries are identical after removing carriage returns. Build release JARs from an LF checkout.
+
+A first fresh-clone attempt under the session scratch directory failed on Windows' 260-character path limit; because the commands were chained, the build then ran in the main working tree and only compared that JAR with itself. The check was repeated with a short path and a guard that stops unless the build runs inside the clone.
 
 ## Remaining steps
 
