@@ -133,7 +133,8 @@ When adding a compatibility fix, record the affected versions, minimal reproduct
 
 ## Current release artifact
 
-- Version: `1.9.18-port.1+mc26.3` (development build, not released)
+- Version: `1.9.18-port.1+mc26.3` (Beta 1 prerelease, tag `26.3-Fabric`)
 - Target: Minecraft 26.3, Fabric, Java 25
-- File: `exposure-fabric-26.3-1.9.18-port.1+mc26.3.jar`
+- File: `exposure-fabric-26.3-1.9.18-port.1+mc26.3.jar` (2,047,559 bytes, SHA-256 `c4bd72d8e746b17ea6787293bf1a0fcd5af2c87eb3c493d2a577fa810bc264f9`)
+- Release notes: `docs/releases/1.9.18-port.1-mc26.3-beta.1.md`
 - The previous 26.1.2 release (`1.9.18-port.2+mc26.1.2`) is documented in the 26.1.2 branch. This workflow does not publish to Modrinth or CurseForge.

@@ -9,11 +9,11 @@ David-Floy maintains this 26.3 port; neither David-Floy nor Filmorae is the orig
 ## Status
 
 - Fabric only.
-- Port version: `1.9.18-port.1+mc26.3` (not released yet).
+- Port version: `1.9.18-port.1+mc26.3`, Beta 1 prerelease ([release notes](docs/releases/1.9.18-port.1-mc26.3-beta.1.md)).
 - The mod id remains `exposure` for dependent-mod recognition.
 - Compatibility with old Exposure worlds, albums, photographs, and repository data is not guaranteed. Back up a world before testing.
 
-The 26.3 build passes the automated gates (compilation, 70 migration tests, both Access Widener validations, full build). At runtime it has so far been verified with a development client on OpenGL (startup, new world, background Capture with an exported photograph, clean exit), in the maintainer's in-game test on Vulkan, and with a dedicated server (startup to `Done`, datapack loading, normal stop). Improved Transparency and Shader Packs are not verified yet. See [COMPATIBILITY.md](COMPATIBILITY.md) for the exact matrix and [KNOWN_ISSUES.md](KNOWN_ISSUES.md) for support limits.
+The 26.3 build passes the automated gates (compilation, 70 migration tests, both Access Widener validations, full build). At runtime it has so far been verified with a development client on OpenGL (startup, new world, background Capture with an exported photograph, clean exit), in the maintainer's in-game test on Vulkan, with the release JAR in a launcher instance, and with a dedicated server (startup to `Done`, datapack loading, normal stop). Iris, Sodium, and Lithium worked in the maintainer's launcher test (exact versions in [COMPATIBILITY.md](COMPATIBILITY.md)); Improved Transparency and specific Shader Packs are not verified yet. See [COMPATIBILITY.md](COMPATIBILITY.md) for the exact matrix and [KNOWN_ISSUES.md](KNOWN_ISSUES.md) for support limits.
 
 ## Requirements
 
@@ -29,14 +29,14 @@ Optional integrations in the source tree are not required runtime dependencies a
 
 1. Install Minecraft 26.3 with Fabric Loader and Java 25.
 2. Install the required Fabric API and Forge Config API Port versions above.
-3. Place the port JAR in the instance's `mods` directory.
+3. Download the port JAR from this repository's [Releases](https://github.com/David-Floy/Exposure-26.3-Port/releases) page and place it in the instance's `mods` directory.
 4. Start with a backed-up test world and confirm the loaded version identifies this unofficial port.
 
 Do not download this port from the official Exposure CurseForge or Modrinth project pages; those pages belong to the upstream project.
 
 ## Shader and rendering boundary
 
-The port uses Minecraft's normal frame lifecycle and does not hard-code an Iris or Shader-Pack-private framebuffer. Capture has been verified without shaders on OpenGL and Vulkan; results with Improved Transparency, Iris/Sodium, other GPUs, player-model layers, or skin-layer mods are not established yet.
+The port uses Minecraft's normal frame lifecycle and does not hard-code an Iris or Shader-Pack-private framebuffer. Capture has been verified without shaders on OpenGL and Vulkan, and Iris, Sodium, and Lithium worked in the maintainer's launcher test with the versions listed in [COMPATIBILITY.md](COMPATIBILITY.md); results with Improved Transparency, specific Shader Packs, other GPUs, player-model layers, or skin-layer mods are not established yet.
 
 ## Reporting a bug
 

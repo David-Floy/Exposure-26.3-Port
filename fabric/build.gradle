@@ -62,6 +62,10 @@ processResources {
 // The Fabric distribution contains both the platform sources and the common output.
 tasks.named('jar', Jar) {
     from(project(':common').sourceSets.main.output)
+    // The MIT license requires its copyright and permission notice in every copy of the mod.
+    from(rootProject.file('LICENSE.md')) {
+        rename { "LICENSE_${rootProject.mod_id}.md" }
+    }
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 }
 

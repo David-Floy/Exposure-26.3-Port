@@ -8,10 +8,9 @@
 ## Minecraft 26.3 port status
 
 - Capture and readback are verified on OpenGL and, by the maintainer's in-game test, on Vulkan (AMD proprietary driver). Improved Transparency (order-independent transparency) is untested; photographs and glass frames use vanilla `entityTranslucent`, which 26.3 routes through its OIT pipelines when the option is enabled.
-- Iris and Sodium for 26.3 have not been tested with this port yet.
+- Iris 1.11.7+26.3-fabric, Sodium mc26.3-0.9.2-fabric, and Lithium mc26.3-0.26.2-fabric worked in the maintainer's launcher test. Other versions and specific Shader Packs are unverified.
 - The "Keep Post Effect" capture option controls only the vanilla spectator post effect (creeper/spider/enderman), as in 26.1.2. Post effects that 26.3 applies to the player through `/posteffect` (`LocalPlayer#getActivePostEffects`) are not disabled for photographs.
 - During a background capture, the frame after arming renders the world off-screen into the capture target, so that single presented frame repeats the previous frame's image with the current GUI drawn over it. This follows from the architecture (no extra `renderLevel`) and was not observed as a visible artifact in testing.
-- The Album note and signing text boxes were adapted to SDL text input (focus is reported to the text input manager); typing in them has not been re-tested in-game yet.
 - Optional integrations (JEI, Jade, Create, Easy Anvils) remain excluded from the build, as in the 26.1.2 port.
 
 When reporting a problem, include:

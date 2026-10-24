@@ -1,6 +1,6 @@
 # Changelog
 
-## [1.9.18-port.1+mc26.3] - Unreleased
+## [1.9.18-port.1+mc26.3] - 2026-10-24
 
 ### Changed
 
@@ -9,6 +9,7 @@
 - Input follows the SDL3 key, mouse-button and modifier codes of 26.3; Album text boxes report text input focus as SDL requires.
 - Loot tables and advancements use the 26.3 datapack formats (loot `condition`/`modifier` holders, typed entity sub-predicates, `recipes` for recipe unlocks).
 - The Exposure colour filter shader uses standard std140 uniform offsets and the SPIR-V shader conventions of 26.3.
+- Released as Beta 1 prerelease; the JAR contains the MIT license text (`LICENSE_exposure.md`).
 
 ### Fixed
 

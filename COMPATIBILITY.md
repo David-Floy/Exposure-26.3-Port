@@ -15,9 +15,10 @@ This table records controlled verification only. An entry does not imply support
 | Vulkan | Partially verified | Maintainer in-game test with Vulkan 1.4.315: 20 photographs captured, no Exposure errors; the only finding, the camera attachment placement, was fixed and re-tested |
 | Improved Transparency (OIT) | Not verified | Tested with the option off only |
 | No Shader Pack | Partially verified | Startup, new world, background Capture with an exported photograph (full world frame incl. sky, no HUD/hand), clean exit |
-| Iris / Sodium | Not verified | No 26.3 Shader Pack matrix yet |
+| Iris / Sodium / Lithium | Partially verified | Maintainer test with the Beta 1 JAR in a launcher instance: Iris 1.11.7+26.3-fabric, Sodium mc26.3-0.9.2-fabric, Lithium mc26.3-0.26.2-fabric, no problems found; Shader Pack and graphics API were not recorded |
 | Integrated server | Partially verified | World creation, datapack load (all 29 Exposure advancements), Capture advancement trigger, save and stop |
 | Dedicated server | Verified | Startup to `Done`, datapack load (1866 vanilla + 29 Exposure advancements), normal `stop` |
+| Release JAR in a launcher instance | Verified | Maintainer test of Beta 1 with the required dependency versions: mod list, new world, capture, development and printing, Album notes and signing (text input), frames, export, save/reload, clean exit |
 
 Everything not listed is unverified unless a later dated entry or community report documents the exact environment and reproduction. Community reports should be labeled as such and should not replace controlled verification.
 
